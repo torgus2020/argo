@@ -1,0 +1,54 @@
+# ============================================
+# Argo - requirements.txt
+# ============================================
+# Versiones fijadas para reproducibilidad.
+# Si una versión no tiene wheel para Python 3.14,
+# probar la inmediatamente anterior o evaluar
+# bajar Python a 3.12 (decisión a tomar en H0.2).
+# ============================================
+
+# Datos y manipulación
+pandas==2.2.3
+numpy==2.1.3
+
+# HTTP y APIs
+requests==2.32.3
+websockets==13.1
+httpx==0.27.2
+
+# Async
+aiohttp==3.10.10
+
+# Persistencia
+SQLAlchemy==2.0.36
+
+# Validación de datos
+pydantic==2.9.2
+
+# Excel (para reportes)
+openpyxl==3.1.5
+
+# Scheduling
+schedule==1.2.2
+
+# Telegram
+python-telegram-bot==21.6
+
+# Validación de schemas JSON
+jsonschema==4.23.0
+
+# Manejo de timezone
+pytz==2024.2
+
+# Variables de entorno (por si en algún momento usamos .env además de secrets.json)
+python-dotenv==1.0.1
+
+# Testing
+pytest==8.3.3
+pytest-asyncio==0.24.0
+
+# Análisis estadístico (vamos a necesitarlo en Fase 2 para métricas)
+scipy==1.14.1
+
+# Logging (incluido en stdlib, pero rotación viene en stdlib también)
+# No requiere paquete externo.

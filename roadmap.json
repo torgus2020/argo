@@ -1,0 +1,357 @@
+{
+  "meta": {
+    "schema_version": "1.0.0",
+    "fecha_ultima_actualizacion": "2026-05-12",
+    "autor": "Gus + Claude"
+  },
+  "fases": [
+    {
+      "id": "fase_0",
+      "nombre": "Fundación",
+      "objetivo": "Dejar el esqueleto técnico, organizativo y de tracking listo para que cualquier desarrollo posterior tenga dónde apoyarse.",
+      "estado": "en_curso",
+      "fecha_inicio": "2026-05-12",
+      "fecha_cierre_real": null,
+      "criterios_cierre": [
+        "Repo GitHub privado operativo con estructura completa y sin secrets en historial",
+        "roadmap.json validable contra schema, parseable y con engine corriendo",
+        "Logger funcionando con rotación diaria",
+        "VPS levantado, accesible por SSH, con Python 3.14 y entorno virtual",
+        "Telegram Bot configurado y enviando alertas de prueba"
+      ],
+      "hitos": [
+        {
+          "id": "H0.1",
+          "nombre": "Fundación del proyecto y roadmap operativo",
+          "descripcion": "Estructura de carpetas, repo GitHub, configs base, requirements, logger, roadmap.json validado, README, script de verificación.",
+          "estado": "en_curso",
+          "prioridad": "alta",
+          "fecha_inicio": "2026-05-12",
+          "fecha_cierre_target": null,
+          "fecha_cierre_real": null,
+          "depende_de": [],
+          "entregables": [
+            "Estructura de carpetas completa según spec",
+            "Repo GitHub privado torgus2020/argo inicializado",
+            ".gitignore con exclusión de secrets y data",
+            "config/config.json base",
+            "config/secrets.json.template",
+            "requirements.txt con versiones fijadas",
+            "src/utils/logger.py funcionando",
+            "roadmap.json + roadmap.schema.json",
+            "README.md",
+            "Script verificar_instalacion.py"
+          ],
+          "criterios_cuantitativos": [
+            "Repo cloneable en máquina limpia",
+            "pip install -r requirements.txt sin errores",
+            "verificar_instalacion.py corre y reporta todas las carpetas presentes",
+            "roadmap.json valida contra roadmap.schema.json",
+            "Logger escribe correctamente a logs/argo_YYYYMMDD.log",
+            "Cero secrets en historial git (validado con grep)"
+          ],
+          "riesgos": [
+            "Sobreingeniería: tentación de dejar todo perfecto antes de avanzar",
+            "Python 3.14 puede no tener wheels para todas las librerías"
+          ],
+          "notas": "Primer hito del proyecto. Decisión clave: roadmap.json se diseña junto con la estructura, no como hito separado, para tener fuente de verdad desde día uno."
+        },
+        {
+          "id": "H0.2",
+          "nombre": "VPS provisionado y accesible",
+          "descripcion": "Levantar VPS (DonWeb o DigitalOcean), configurar SSH con clave, instalar Python 3.14, crear usuario argo, clonar repo, levantar entorno virtual, configurar firewall UFW.",
+          "estado": "pendiente",
+          "prioridad": "alta",
+          "fecha_inicio": null,
+          "fecha_cierre_target": null,
+          "fecha_cierre_real": null,
+          "depende_de": ["H0.1"],
+          "entregables": [
+            "VPS Ubuntu LTS operativo",
+            "Acceso SSH con clave pública/privada (password disabled)",
+            "Python 3.14 instalado",
+            "Repo cloneado en /home/argo/",
+            "Entorno virtual con dependencias instaladas",
+            "Firewall UFW configurado (SSH only)"
+          ],
+          "criterios_cuantitativos": [
+            "ssh argo@vps 'python --version' devuelve 3.14.x",
+            "Entorno virtual activo con pandas, numpy importables",
+            "Intentos de SSH con password rechazados",
+            "UFW status verbose muestra solo SSH (22) abierto"
+          ],
+          "riesgos": [
+            "Python 3.14 puede no estar en repos estables de Ubuntu LTS, requiriendo compilación desde fuente o PPA",
+            "Si compila desde fuente, evaluar bajar a Python 3.12 LTS"
+          ],
+          "notas": ""
+        },
+        {
+          "id": "H0.3",
+          "nombre": "Telegram Bot configurado y alertas de prueba",
+          "descripcion": "Crear bot con BotFather, guardar token en secrets.json, escribir src/utils/telegram_notifier.py, enviar mensaje de prueba desde VPS, heartbeat diario.",
+          "estado": "pendiente",
+          "prioridad": "alta",
+          "fecha_inicio": null,
+          "fecha_cierre_target": null,
+          "fecha_cierre_real": null,
+          "depende_de": ["H0.2"],
+          "entregables": [
+            "Bot creado con BotFather, token en secrets.json (local y VPS)",
+            "src/utils/telegram_notifier.py con función enviar_alerta(mensaje, nivel)",
+            "Niveles INFO, WARNING, ERROR, CRITICAL implementados",
+            "Cron o systemd timer enviando heartbeat diario 9 AM"
+          ],
+          "criterios_cuantitativos": [
+            "7 heartbeats consecutivos recibidos sin fallar",
+            "enviar_alerta('test', 'INFO') desde VPS llega a Telegram en menos de 5 segundos"
+          ],
+          "riesgos": [
+            "Si VPS está caído al horario de heartbeat, la alerta no llega y no nos enteramos que el VPS está caído; mitigación: configurar un watchdog externo más adelante (Fase 1 o 2)"
+          ],
+          "notas": ""
+        },
+        {
+          "id": "H0.4",
+          "nombre": "Roadmap engine operativo",
+          "descripcion": "src/roadmap/engine.py parsea roadmap.json diariamente, detecta hitos atrasados, dependencias bloqueadas, criterios pendientes, emite alertas Telegram según reglas. Filosofía: silencio cuando todo está OK.",
+          "estado": "pendiente",
+          "prioridad": "alta",
+          "fecha_inicio": null,
+          "fecha_cierre_target": null,
+          "fecha_cierre_real": null,
+          "depende_de": ["H0.1", "H0.2", "H0.3"],
+          "entregables": [
+            "src/roadmap/engine.py funcionando",
+            "Cron diario a las 9 AM hora Buenos Aires",
+            "Test unitario: roadmap con hito atrasado simulado dispara alerta correcta",
+            "Test unitario: roadmap sin nada urgente no dispara nada"
+          ],
+          "criterios_cuantitativos": [
+            "Engine corre 7 días consecutivos sin errores en logs",
+            "Tests unitarios pasan",
+            "Silencio confirmado en días donde no hay nada accionable"
+          ],
+          "riesgos": [
+            "Sobre-alertar al inicio (falsos positivos) puede llevar a ignorar alertas reales después"
+          ],
+          "notas": "Es el primer pedazo de inteligencia del sistema. Si funciona bien, sienta precedente para todo el resto del proyecto."
+        }
+      ]
+    },
+    {
+      "id": "fase_1",
+      "nombre": "Datos (collectors + storage)",
+      "objetivo": "Tener un flujo confiable de datos AR + US + macro entrando al sistema y persistiendo en SQLite, con reconciliación automática de huecos.",
+      "estado": "pendiente",
+      "fecha_inicio": null,
+      "fecha_cierre_real": null,
+      "criterios_cierre": [
+        "Collectors de Rava, Polygon, BCRA e INDEC funcionando en VPS",
+        "30 días corridos de datos sin huecos no justificados en argo.sqlite",
+        "Sistema de detección de huecos y reintentos operativo",
+        "Snapshots crudos en data/raw/ con timestamping",
+        "Schema de base de datos versionado"
+      ],
+      "hitos": [
+        {
+          "id": "H1.1",
+          "nombre": "Schema de base de datos + módulo de persistencia",
+          "descripcion": "Diseñar schema de argo.sqlite (instrumentos, cotizaciones_1min, cotizaciones_diarias, macro_indicadores, log_collectors). Escribir src/utils/db.py con SQLAlchemy. Sistema simple de migraciones numeradas.",
+          "estado": "pendiente",
+          "prioridad": "alta",
+          "fecha_inicio": null,
+          "fecha_cierre_target": null,
+          "fecha_cierre_real": null,
+          "depende_de": ["H0.4"],
+          "entregables": [
+            "Schema completo documentado",
+            "src/utils/db.py con CRUD básico",
+            "Sistema de migraciones (scripts numerados)",
+            "Test unitario: crear DB, insertar dummy, leer dummy, validar"
+          ],
+          "criterios_cuantitativos": [
+            "Tests pasan",
+            "Schema parseable, sin foreign keys huérfanas"
+          ],
+          "riesgos": [
+            "Schema mal diseñado al inicio cuesta mucho refactorear después"
+          ],
+          "notas": ""
+        },
+        {
+          "id": "H1.2",
+          "nombre": "Collector Rava Bursátil",
+          "descripcion": "src/collectors/rava.py se conecta a Rava, descarga histórico inicial del universo definido en config/universe.json, captura 1-min bars en tiempo real. Logueo exhaustivo. Detección y reintento de huecos.",
+          "estado": "pendiente",
+          "prioridad": "alta",
+          "fecha_inicio": null,
+          "fecha_cierre_target": null,
+          "fecha_cierre_real": null,
+          "depende_de": ["H1.1"],
+          "entregables": [
+            "src/collectors/rava.py funcionando",
+            "config/universe.json con instrumentos iniciales (bonos, panel líder, CEDEARs)",
+            "Histórico inicial cargado en argo.sqlite",
+            "Logs de collector escritos"
+          ],
+          "criterios_cuantitativos": [
+            "Cobertura de datos >= 99% en horario de mercado",
+            "Cero crashes no controlados en 7 días corridos",
+            "Reintentos automáticos funcionando"
+          ],
+          "riesgos": [
+            "API de Rava puede tener limitaciones no documentadas",
+            "Definir universo es decisión cuantitativa, no trivial"
+          ],
+          "notas": ""
+        },
+        {
+          "id": "H1.3",
+          "nombre": "Collector Polygon.io (subyacente US)",
+          "descripcion": "src/collectors/polygon.py análogo a Rava pero contra Polygon free tier, para underlyings US de CEDEARs.",
+          "estado": "pendiente",
+          "prioridad": "alta",
+          "fecha_inicio": null,
+          "fecha_cierre_target": null,
+          "fecha_cierre_real": null,
+          "depende_de": ["H1.1"],
+          "entregables": [
+            "src/collectors/polygon.py funcionando",
+            "Datos en SQLite",
+            "Logueo"
+          ],
+          "criterios_cuantitativos": [
+            "Cobertura >= 99% en horario de mercado US",
+            "Free tier no excedido"
+          ],
+          "riesgos": [
+            "Free tier de Polygon tiene rate limits que pueden requerir batching cuidadoso"
+          ],
+          "notas": ""
+        },
+        {
+          "id": "H1.4",
+          "nombre": "Collectors BCRA + INDEC",
+          "descripcion": "src/collectors/bcra.py y src/collectors/indec.py. Reservas, tipos de cambio oficial, IPC general/núcleo/mayorista. Frecuencia diaria/mensual según corresponda.",
+          "estado": "pendiente",
+          "prioridad": "media",
+          "fecha_inicio": null,
+          "fecha_cierre_target": null,
+          "fecha_cierre_real": null,
+          "depende_de": ["H1.1"],
+          "entregables": [
+            "src/collectors/bcra.py funcionando",
+            "src/collectors/indec.py funcionando",
+            "Datos en SQLite"
+          ],
+          "criterios_cuantitativos": [
+            "Datos disponibles dentro de 24hs de su publicación oficial",
+            "Cero crashes no controlados en 30 días"
+          ],
+          "riesgos": [
+            "APIs públicas pueden cambiar sin aviso"
+          ],
+          "notas": "Prioridad media porque las estrategias iniciales (pairs CEDEAR) no dependen directamente de macro. Pero la infraestructura tiene que estar lista para Fase 3 (bonos_macro)."
+        },
+        {
+          "id": "H1.5",
+          "nombre": "Sistema de detección y reporte de huecos",
+          "descripcion": "Script diario que recorre series, detecta huecos, reporta por Telegram, reintenta llenarlos si la fuente todavía los tiene.",
+          "estado": "pendiente",
+          "prioridad": "alta",
+          "fecha_inicio": null,
+          "fecha_cierre_target": null,
+          "fecha_cierre_real": null,
+          "depende_de": ["H1.2", "H1.3", "H1.4"],
+          "entregables": [
+            "src/collectors/gap_detector.py",
+            "Cron diario",
+            "Reporte semanal de cobertura por Telegram"
+          ],
+          "criterios_cuantitativos": [
+            "Sin huecos no detectados en 30 días",
+            "Reportes semanales llegando a Telegram"
+          ],
+          "riesgos": [],
+          "notas": "Es el guardián de la calidad de datos. Si esto falla, todo lo que viene después está construido sobre arena."
+        }
+      ]
+    },
+    {
+      "id": "fase_2",
+      "nombre": "Backtester + primera estrategia",
+      "objetivo": "Engine de backtesting realista y pairs_cedear.py implementada y backtesteada con métricas creíbles.",
+      "estado": "pendiente",
+      "fecha_inicio": null,
+      "fecha_cierre_real": null,
+      "criterios_cierre": [
+        "Engine que modela slippage y comisiones por broker",
+        "Walk-forward analysis implementado",
+        "pairs_cedear.py con backtest histórico >= 2 años, Sharpe >= 1.0 backtest",
+        "Reporte automático de métricas estándar",
+        "Regime change testing implementado"
+      ],
+      "hitos": []
+    },
+    {
+      "id": "fase_3",
+      "nombre": "Paper trading + risk management + Telegram propose-and-confirm",
+      "objetivo": "Sistema operando en paper con propuestas por Telegram, gestión de riesgo activa y kill switches funcionando.",
+      "estado": "pendiente",
+      "fecha_inicio": null,
+      "fecha_cierre_real": null,
+      "criterios_cierre": [
+        "Paper broker operativo con slippage realista",
+        "pairs_cedear.py corriendo en paper 90+ días corridos",
+        "Sharpe paper >= 0.8, drawdown <= 15%, tracking error paper vs backtest <= 30%",
+        "Kelly fraccional implementado (0.25 Kelly default)",
+        "Kill switches funcionando y testeados",
+        "Reconciliación diaria implementada",
+        "Bot Telegram propone, confirma, ejecuta en paper"
+      ],
+      "hitos": []
+    },
+    {
+      "id": "fase_4",
+      "nombre": "Broker real (capital piloto USD 5K)",
+      "objetivo": "Primera estrategia operando con plata real en cuenta paralela, con confirmación manual, capital acotado y gobernanza completa.",
+      "estado": "pendiente",
+      "fecha_inicio": null,
+      "fecha_cierre_real": null,
+      "criterios_cierre": [
+        "Adapter de BIND funcionando en producción",
+        "pairs_cedear.py operando real 90+ días con confirmación manual",
+        "Slippage real vs simulado <= 1.5x",
+        "Drawdown real <= 15%",
+        "Reconciliación diaria broker vs sistema sin discrepancias no resueltas",
+        "Reportes semanales automáticos por mail funcionando"
+      ],
+      "hitos": []
+    },
+    {
+      "id": "fase_5",
+      "nombre": "Multi-estrategia + escalamiento",
+      "objetivo": "Sistema con múltiples estrategias activas, correlación monitoreada, escalamiento de capital basado en performance demostrada.",
+      "estado": "pendiente",
+      "fecha_inicio": null,
+      "fecha_cierre_real": null,
+      "criterios_cierre": [
+        "Al menos 3 estrategias del roadmap operativas",
+        "Matriz de correlación entre estrategias monitoreada y respetada",
+        "Capital escalado según reglas pre-definidas",
+        "Adapters de Cocos y/o IOL operativos (multi-broker activo)",
+        "Dashboard HTML local con vista consolidada",
+        "Stress testing semanal automático"
+      ],
+      "hitos": []
+    }
+  ],
+  "alertas_config": {
+    "dias_anticipacion_target": 3,
+    "hora_corrida": "09:00",
+    "timezone": "America/Argentina/Buenos_Aires",
+    "canales": ["telegram", "log"],
+    "silencio_si_todo_ok": true
+  }
+}

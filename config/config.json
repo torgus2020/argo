@@ -1,0 +1,40 @@
+{
+  "proyecto": "Argo",
+  "version": "0.1.0",
+  "timezone": "America/Argentina/Buenos_Aires",
+  "paths": {
+    "data_raw": "data/raw",
+    "data_processed": "data/processed",
+    "data_backtests": "data/backtests",
+    "database": "data/argo.sqlite",
+    "logs": "logs",
+    "dashboards": "dashboards"
+  },
+  "logging": {
+    "nivel": "INFO",
+    "rotacion": "diaria",
+    "retencion_dias": 90,
+    "formato": "%(asctime)s | %(name)s | %(levelname)s | %(message)s"
+  },
+  "mercados": {
+    "ar": {
+      "apertura": "11:00",
+      "cierre": "17:00",
+      "zona_horaria": "America/Argentina/Buenos_Aires"
+    },
+    "us": {
+      "apertura": "09:30",
+      "cierre": "16:00",
+      "zona_horaria": "America/New_York"
+    }
+  },
+  "roadmap": {
+    "engine_hora_corrida": "09:00",
+    "engine_timezone": "America/Argentina/Buenos_Aires",
+    "dias_anticipacion_target": 3
+  },
+  "modo_ejecucion": {
+    "default": "propose_and_confirm",
+    "auto_permitido_solo_con_criterios": true
+  }
+}

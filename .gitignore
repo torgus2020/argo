@@ -1,0 +1,64 @@
+# Secrets
+config/secrets.json
+
+# Data
+data/raw/*
+data/processed/*
+data/backtests/*
+data/argo.sqlite
+data/argo.sqlite-journal
+data/argo.sqlite-wal
+data/argo.sqlite-shm
+!data/raw/.gitkeep
+!data/processed/.gitkeep
+!data/backtests/.gitkeep
+
+# Logs
+logs/*
+!logs/.gitkeep
+
+# Dashboards generados
+dashboards/*
+!dashboards/.gitkeep
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+build/
+dist/
+*.egg
+
+# Entorno virtual
+.venv/
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Jupyter notebooks (si en algún momento se usan para exploración)
+.ipynb_checkpoints/
+
+# pytest
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Backups locales accidentales
+*.bak
+*.backup

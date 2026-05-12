@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Argo Roadmap Schema",
+  "description": "Schema de validación para roadmap.json del proyecto Argo",
+  "type": "object",
+  "required": ["meta", "fases", "alertas_config"],
+  "additionalProperties": false,
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["schema_version", "fecha_ultima_actualizacion"],
+      "properties": {
+        "schema_version": { "type": "string" },
+        "fecha_ultima_actualizacion": { "type": "string", "format": "date" },
+        "autor": { "type": "string" }
+      }
+    },
+    "fases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id", "nombre", "objetivo", "estado",
+          "criterios_cierre", "hitos"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": { "type": "string", "pattern": "^fase_[0-9]+$" },
+          "nombre": { "type": "string" },
+          "objetivo": { "type": "string" },
+          "estado": {
+            "type": "string",
+            "enum": ["pendiente", "en_curso", "cerrada"]
+          },
+          "fecha_inicio": { "type": ["string", "null"], "format": "date" },
+          "fecha_cierre_real": { "type": ["string", "null"], "format": "date" },
+          "criterios_cierre": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "hitos": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "id", "nombre", "descripcion", "estado",
+                "prioridad", "depende_de", "entregables",
+                "criterios_cuantitativos"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "id": { "type": "string", "pattern": "^H[0-9]+\\.[0-9]+$" },
+                "nombre": { "type": "string" },
+                "descripcion": { "type": "string" },
+                "estado": {
+                  "type": "string",
+                  "enum": ["pendiente", "en_curso", "bloqueado", "cerrado", "jubilado"]
+                },
+                "prioridad": {
+                  "type": "string",
+                  "enum": ["alta", "media", "baja"]
+                },
+                "fecha_inicio": { "type": ["string", "null"], "format": "date" },
+                "fecha_cierre_target": { "type": ["string", "null"], "format": "date" },
+                "fecha_cierre_real": { "type": ["string", "null"], "format": "date" },
+                "depende_de": {
+                  "type": "array",
+                  "items": { "type": "string", "pattern": "^H[0-9]+\\.[0-9]+$" }
+                },
+                "entregables": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "criterios_cuantitativos": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "riesgos": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "notas": { "type": "string" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "alertas_config": {
+      "type": "object",
+      "required": ["dias_anticipacion_target", "hora_corrida", "canales"],
+      "additionalProperties": false,
+      "properties": {
+        "dias_anticipacion_target": { "type": "integer", "minimum": 0 },
+        "hora_corrida": { "type": "string", "pattern": "^[0-2][0-9]:[0-5][0-9]$" },
+        "timezone": { "type": "string" },
+        "canales": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["telegram", "log", "mail"]
+          }
+        },
+        "silencio_si_todo_ok": { "type": "boolean" }
+      }
+    }
+  }
+}
