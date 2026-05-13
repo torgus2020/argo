@@ -24,11 +24,11 @@
           "id": "H0.1",
           "nombre": "Fundación del proyecto y roadmap operativo",
           "descripcion": "Estructura de carpetas, repo GitHub, configs base, requirements, logger, roadmap.json validado, README, script de verificación.",
-          "estado": "en_curso",
+          "estado": "cerrado",
           "prioridad": "alta",
           "fecha_inicio": "2026-05-12",
           "fecha_cierre_target": null,
-          "fecha_cierre_real": null,
+          "fecha_cierre_real": "2026-05-12",
           "depende_de": [],
           "entregables": [
             "Estructura de carpetas completa según spec",
@@ -54,7 +54,7 @@
             "Sobreingeniería: tentación de dejar todo perfecto antes de avanzar",
             "Python 3.14 puede no tener wheels para todas las librerías"
           ],
-          "notas": "Primer hito del proyecto. Decisión clave: roadmap.json se diseña junto con la estructura, no como hito separado, para tener fuente de verdad desde día uno."
+          "notas": "Primer hito del proyecto. Decisión clave: roadmap.json se diseña junto con la estructura, no como hito separado, para tener fuente de verdad desde día uno. Aprendizaje: Python 3.14 (octubre 2025) requirió actualizar versiones iniciales de pandas (2.3.3), numpy (2.3.5), scipy (1.16.2), aiohttp (3.13.5) y pydantic (2.12.5) porque las versiones más viejas no tenían wheels precompilados y disparaban builds desde fuente que requieren Visual Studio C++ Build Tools. Las versiones actualizadas resolvieron el problema sin necesidad de instalar build tools en local. A monitorear: si vuelve a aparecer con librerías de brokers o SDKs adicionales, evaluar bajar a Python 3.12."
         },
         {
           "id": "H0.2",
