@@ -1,7 +1,7 @@
 {
   "meta": {
     "schema_version": "1.0.0",
-    "fecha_ultima_actualizacion": "2026-05-12",
+    "fecha_ultima_actualizacion": "2026-05-14",
     "autor": "Gus + Claude"
   },
   "fases": [
@@ -16,7 +16,7 @@
         "Repo GitHub privado operativo con estructura completa y sin secrets en historial",
         "roadmap.json validable contra schema, parseable y con engine corriendo",
         "Logger funcionando con rotación diaria",
-        "VPS levantado, accesible por SSH, con Python 3.14 y entorno virtual",
+        "VPS levantado, accesible por SSH, con Python 3.12 y entorno virtual",
         "Telegram Bot configurado y enviando alertas de prueba"
       ],
       "hitos": [
@@ -54,37 +54,40 @@
             "Sobreingeniería: tentación de dejar todo perfecto antes de avanzar",
             "Python 3.14 puede no tener wheels para todas las librerías"
           ],
-          "notas": "Primer hito del proyecto. Decisión clave: roadmap.json se diseña junto con la estructura, no como hito separado, para tener fuente de verdad desde día uno. Aprendizaje: Python 3.14 (octubre 2025) requirió actualizar versiones iniciales de pandas (2.3.3), numpy (2.3.5), scipy (1.16.2), aiohttp (3.13.5) y pydantic (2.12.5) porque las versiones más viejas no tenían wheels precompilados y disparaban builds desde fuente que requieren Visual Studio C++ Build Tools. Las versiones actualizadas resolvieron el problema sin necesidad de instalar build tools en local. A monitorear: si vuelve a aparecer con librerías de brokers o SDKs adicionales, evaluar bajar a Python 3.12."
+          "notas": "Primer hito del proyecto. Decisión clave: roadmap.json se diseña junto con la estructura, no como hito separado, para tener fuente de verdad desde día uno. Aprendizaje: Python 3.14 (octubre 2025) requirió actualizar versiones iniciales de pandas (2.3.3), numpy (2.3.5), scipy (1.16.2), aiohttp (3.13.5) y pydantic (2.12.5) porque las versiones más viejas no tenían wheels precompilados y disparaban builds desde fuente que requieren Visual Studio C++ Build Tools. Las versiones actualizadas resolvieron el problema sin necesidad de instalar build tools en local. A monitorear: si vuelve a aparecer con librerías de brokers o SDKs adicionales, evaluar bajar a Python 3.12. ACTUALIZACIÓN H0.2: efectivamente se decidió bajar a Python 3.12 al instalar el VPS, ver notas de H0.2."
         },
         {
           "id": "H0.2",
           "nombre": "VPS provisionado y accesible",
-          "descripcion": "Levantar VPS (DonWeb o DigitalOcean), configurar SSH con clave, instalar Python 3.14, crear usuario argo, clonar repo, levantar entorno virtual, configurar firewall UFW.",
-          "estado": "pendiente",
+          "descripcion": "Levantar VPS (DonWeb o DigitalOcean), configurar SSH con clave, instalar Python 3.12, crear usuario argo, clonar repo, levantar entorno virtual, configurar firewall UFW.",
+          "estado": "cerrado",
           "prioridad": "alta",
-          "fecha_inicio": null,
+          "fecha_inicio": "2026-05-12",
           "fecha_cierre_target": null,
-          "fecha_cierre_real": null,
+          "fecha_cierre_real": "2026-05-14",
           "depende_de": ["H0.1"],
           "entregables": [
-            "VPS Ubuntu LTS operativo",
+            "VPS Ubuntu LTS operativo (DigitalOcean Basic Droplet en NYC3, USD 12/mes)",
             "Acceso SSH con clave pública/privada (password disabled)",
-            "Python 3.14 instalado",
-            "Repo cloneado en /home/argo/",
+            "Usuario argo con permisos sudo, root SSH deshabilitado",
+            "Python 3.12.x instalado",
+            "Repo cloneado en /home/argo/argo via SSH key dedicada para GitHub",
             "Entorno virtual con dependencias instaladas",
             "Firewall UFW configurado (SSH only)"
           ],
           "criterios_cuantitativos": [
-            "ssh argo@vps 'python --version' devuelve 3.14.x",
+            "ssh argo@vps 'python3 --version' devuelve 3.12.x",
             "Entorno virtual activo con pandas, numpy importables",
             "Intentos de SSH con password rechazados",
-            "UFW status verbose muestra solo SSH (22) abierto"
+            "Intentos de SSH como root rechazados (Permission denied publickey)",
+            "UFW status verbose muestra solo SSH (22) abierto",
+            "verificar_instalacion.py corre todo verde en VPS y en Windows local"
           ],
           "riesgos": [
             "Python 3.14 puede no estar en repos estables de Ubuntu LTS, requiriendo compilación desde fuente o PPA",
             "Si compila desde fuente, evaluar bajar a Python 3.12 LTS"
           ],
-          "notas": ""
+          "notas": "Proveedor elegido: DigitalOcean Basic Droplet 2GB RAM / 1 vCPU / 50 GB SSD en NYC3 a USD 12/mes (más USD 2.40/mes de backups si se activan, decisión pendiente). DonWeb se descartó por proximidad equivalente y mejor documentación/comunidad en DO. Latencia ~140ms a APIs argentinas, NO crítica para Argo dado que ninguna estrategia es HFT. DECISIÓN ESTRATÉGICA: se bajó de Python 3.14 a Python 3.12 (LTS) tanto en Windows local como en VPS. Razones: (1) Python 3.14 no está en repos oficiales de Ubuntu 24.04 LTS, requeriría deadsnakes PPA o compilación desde fuente. (2) Ya hubo dos episodios de fricción en H0.1 con librerías que no tenían wheels para 3.14 (pandas/numpy/scipy primero, aiohttp/pydantic después). (3) Argo no usa ninguna feature exclusiva de 3.14; las novedades de esa versión (free-threading, JIT) son experimentales y no las necesitamos. (4) Python 3.12 es LTS de facto, con soporte de parches de seguridad hasta 2028. (5) Reproducibilidad: VPS Ubuntu 24.04 trae 3.12.3 nativo, Windows local tiene 3.12.10 oficial. Diferencia de patch (.3 vs .10) no afecta funcionalidad. Hardening crítico: aplicado correctamente (PermitRootLogin no, PasswordAuthentication no, PubkeyAuthentication yes). Clave SSH dedicada generada en VPS para acceso a GitHub (separada de la clave que da acceso al VPS desde Windows). Workflow operativo validado: bajar de Python en local sin dolor porque el venv de Argo es regenerable en 5 minutos."
         },
         {
           "id": "H0.3",
