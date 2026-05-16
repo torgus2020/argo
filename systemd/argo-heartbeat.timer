@@ -1,0 +1,11 @@
+[Unit]
+Description=Argo - Timer diario heartbeat (9 AM hora Buenos Aires)
+Requires=argo-heartbeat.service
+
+[Timer]
+OnCalendar=*-*-* 09:00:00 America/Argentina/Buenos_Aires
+Persistent=true
+Unit=argo-heartbeat.service
+
+[Install]
+WantedBy=timers.target

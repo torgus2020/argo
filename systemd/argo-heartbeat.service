@@ -1,0 +1,18 @@
+[Unit]
+Description=Argo - Heartbeat diario via Telegram
+Documentation=https://github.com/torgus2020/argo
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=argo
+Group=argo
+WorkingDirectory=/home/argo/argo
+ExecStart=/home/argo/argo/.venv/bin/python /home/argo/argo/scripts/heartbeat.py
+StandardOutput=journal
+StandardError=journal
+TimeoutStartSec=60
+
+[Install]
+WantedBy=multi-user.target
