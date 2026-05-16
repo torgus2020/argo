@@ -1,7 +1,7 @@
 {
   "meta": {
     "schema_version": "1.0.0",
-    "fecha_ultima_actualizacion": "2026-05-14",
+    "fecha_ultima_actualizacion": "2026-05-16",
     "autor": "Gus + Claude"
   },
   "fases": [
@@ -93,9 +93,9 @@
           "id": "H0.3",
           "nombre": "Telegram Bot configurado y alertas de prueba",
           "descripcion": "Crear bot con BotFather, guardar token en secrets.json, escribir src/utils/telegram_notifier.py, enviar mensaje de prueba desde VPS, heartbeat diario.",
-          "estado": "pendiente",
+          "estado": "en_curso",
           "prioridad": "alta",
-          "fecha_inicio": null,
+          "fecha_inicio": "2026-05-15",
           "fecha_cierre_target": null,
           "fecha_cierre_real": null,
           "depende_de": ["H0.2"],
@@ -112,7 +112,7 @@
           "riesgos": [
             "Si VPS está caído al horario de heartbeat, la alerta no llega y no nos enteramos que el VPS está caído; mitigación: configurar un watchdog externo más adelante (Fase 1 o 2)"
           ],
-          "notas": ""
+          "notas": "Implementación técnica completa el 2026-05-16: bot @argo_vps_alerts_bot creado, secrets.json configurado en local y VPS, módulo src/utils/telegram_notifier.py implementado con cuatro niveles (INFO/WARNING/ERROR/CRITICAL), script scripts/heartbeat.py con métricas de sistema (uptime, memoria, disco), systemd service + timer instalados en VPS, primera ejecución automática programada para 2026-05-17 09:00 -03. Timezone del VPS configurada a America/Argentina/Buenos_Aires. Decisión de diseño: el módulo telegram_notifier devuelve False en caso de fallo en lugar de levantar excepción, para no crashear el sistema llamador cuando una alerta no se entrega. PENDIENTE para cierre formal: validación de 7 heartbeats consecutivos sin fallar (criterio cuantitativo), se valida automáticamente del 2026-05-17 al 2026-05-23. Si los 7 llegan, marcar como cerrado con fecha_cierre_real."
         },
         {
           "id": "H0.4",
