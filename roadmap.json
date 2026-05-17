@@ -1,7 +1,7 @@
 {
   "meta": {
     "schema_version": "1.0.0",
-    "fecha_ultima_actualizacion": "2026-05-16",
+    "fecha_ultima_actualizacion": "2026-05-17",
     "autor": "Gus + Claude"
   },
   "fases": [
@@ -123,7 +123,7 @@
           "fecha_inicio": "2026-05-16",
           "fecha_cierre_target": null,
           "fecha_cierre_real": null,
-          "depende_de": ["H0.1", "H0.2", "H0.3"],
+          "depende_de": ["H0.1", "H0.2"],
           "entregables": [
             "src/roadmap/engine.py funcionando",
             "Cron diario a las 9 AM hora Buenos Aires",
@@ -138,7 +138,7 @@
           "riesgos": [
             "Sobre-alertar al inicio (falsos positivos) puede llevar a ignorar alertas reales después"
           ],
-          "notas": "Implementación técnica completa el 2026-05-16: analyzers.py con 4 detectores (atrasados, próximos a target, bloqueados, dependencias rotas) - funciones puras sin side effects para testabilidad. engine.py con orquestación: validación de schema en cada corrida, formateo de mensaje único agrupado, escalamiento de nivel según severidad (INFO/WARNING/ERROR/CRITICAL). 21 tests unitarios pasando local y VPS en menos de 0.15s. systemd service + timer instalados, programado para 09:00:00 -03 diarios (mismo horario que heartbeat por filosofía 'una sola ventana de check al día'). Decisión de diseño clave: separación analyzers.py (puro, testeable) vs engine.py (efectos, archivos, red). PENDIENTE para cierre formal: validación de 7 días consecutivos sin errores en logs (criterio cuantitativo), se valida automáticamente del 2026-05-17 al 2026-05-23. Si los 7 días pasan limpios, marcar como cerrado con fecha_cierre_real."
+          "notas": "Implementación técnica completa el 2026-05-16: analyzers.py con 4 detectores (atrasados, próximos a target, bloqueados, dependencias rotas) - funciones puras sin side effects para testabilidad. engine.py con orquestación: validación de schema en cada corrida, formateo de mensaje único agrupado, escalamiento de nivel según severidad (INFO/WARNING/ERROR/CRITICAL). 21 tests unitarios pasando local y VPS en menos de 0.15s. systemd service + timer instalados, programado para 09:00:00 -03 diarios (mismo horario que heartbeat por filosofía 'una sola ventana de check al día'). Decisión de diseño clave: separación analyzers.py (puro, testeable) vs engine.py (efectos, archivos, red). El 2026-05-17 el primer engine run detectó dependencia rota entre H0.4 y H0.3 porque ambos estaban en validación paralela. Decisión: cambiar depende_de de H0.3 a H0.2 para reflejar dependencia operativa real (el engine necesita VPS+Python, no necesita H0.3 formalmente cerrado). PENDIENTE para cierre formal: validación de 7 días consecutivos sin errores en logs (criterio cuantitativo), se valida automáticamente del 2026-05-17 al 2026-05-23. Si los 7 días pasan limpios, marcar como cerrado con fecha_cierre_real."
         }
       ]
     },
