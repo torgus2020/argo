@@ -118,9 +118,9 @@
           "id": "H0.4",
           "nombre": "Roadmap engine operativo",
           "descripcion": "src/roadmap/engine.py parsea roadmap.json diariamente, detecta hitos atrasados, dependencias bloqueadas, criterios pendientes, emite alertas Telegram según reglas. Filosofía: silencio cuando todo está OK.",
-          "estado": "pendiente",
+          "estado": "en_curso",
           "prioridad": "alta",
-          "fecha_inicio": null,
+          "fecha_inicio": "2026-05-16",
           "fecha_cierre_target": null,
           "fecha_cierre_real": null,
           "depende_de": ["H0.1", "H0.2", "H0.3"],
@@ -138,7 +138,7 @@
           "riesgos": [
             "Sobre-alertar al inicio (falsos positivos) puede llevar a ignorar alertas reales después"
           ],
-          "notas": "Es el primer pedazo de inteligencia del sistema. Si funciona bien, sienta precedente para todo el resto del proyecto."
+          "notas": "Implementación técnica completa el 2026-05-16: analyzers.py con 4 detectores (atrasados, próximos a target, bloqueados, dependencias rotas) - funciones puras sin side effects para testabilidad. engine.py con orquestación: validación de schema en cada corrida, formateo de mensaje único agrupado, escalamiento de nivel según severidad (INFO/WARNING/ERROR/CRITICAL). 21 tests unitarios pasando local y VPS en menos de 0.15s. systemd service + timer instalados, programado para 09:00:00 -03 diarios (mismo horario que heartbeat por filosofía 'una sola ventana de check al día'). Decisión de diseño clave: separación analyzers.py (puro, testeable) vs engine.py (efectos, archivos, red). PENDIENTE para cierre formal: validación de 7 días consecutivos sin errores en logs (criterio cuantitativo), se valida automáticamente del 2026-05-17 al 2026-05-23. Si los 7 días pasan limpios, marcar como cerrado con fecha_cierre_real."
         }
       ]
     },
