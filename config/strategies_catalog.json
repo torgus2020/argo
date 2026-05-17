@@ -1,0 +1,165 @@
+{
+  "meta": {
+    "schema_version": "1.0.0",
+    "fecha_ultima_actualizacion": "2026-05-17",
+    "descripcion": "Catálogo de estrategias planificadas para Argo. Las estrategias se materializan como hitos del roadmap.json cuando estén listas para arrancar implementación. Este catálogo es la fuente de verdad sobre QUÉ estrategias existen en el plan, su edge teórico, y su fase tentativa.",
+    "criterios_inclusion": [
+      "Edge teórico identificable y cuantificable",
+      "Compatible con instrumentos del universe.json",
+      "Riesgos comprendidos y aceptables según reglas duras del proyecto"
+    ],
+    "criterios_jubilacion": [
+      "Edge no demostrable tras backtest exhaustivo",
+      "Performance real consistentemente debajo de criterios de promoción durante 90+ días",
+      "Cambios estructurales del mercado que invaliden la hipótesis original"
+    ]
+  },
+
+  "estrategias": [
+    {
+      "id": "pairs_cedear",
+      "nombre": "Pairs trading CEDEAR vs subyacente US",
+      "familia": "arbitraje",
+      "fase_tentativa": 2,
+      "estado": "planificada",
+      "descripcion": "Detectar y operar desvíos transitorios entre el precio del CEDEAR argentino y su subyacente en USA, ajustados por dólar CCL y ratio de conversión. Cuando el spread normalizado supera ±N desvíos estándar de su media histórica, abrir posición esperando reversión a la media.",
+      "edge_teorico": "El mercado argentino tiene fricciones (impuestos, regulaciones cambiantes, baja liquidez relativa) que generan desvíos temporales que tienden a corregirse. El edge proviene de la cuasi-equivalencia económica entre CEDEAR y subyacente.",
+      "riesgos_principales": [
+        "Cambio regulatorio que afecte el dólar CCL implícito",
+        "Cambio de ratio de conversión del CEDEAR (ya ocurrió en 2024)",
+        "Eventos corporativos (splits, dividendos extraordinarios) no procesados correctamente",
+        "Período de cepo cambiario donde el dólar CCL oficial diverge del implícito"
+      ],
+      "instrumentos_requeridos": ["cedears", "subyacentes_us", "DOLAR_CCL"],
+      "depende_de_hitos": ["H1.1", "H1.2", "H1.3"]
+    },
+    {
+      "id": "factor_merval",
+      "nombre": "Factor investing en panel líder Merval",
+      "familia": "factor_investing",
+      "fase_tentativa": 3,
+      "estado": "planificada",
+      "descripcion": "Construir un portfolio long/short o long-only sobre el panel líder usando factores clásicos: value (P/E, P/B), momentum (12m-1m), quality (ROE, deuda/capital), low volatility. Rebalanceo mensual o quincenal.",
+      "edge_teorico": "Factores académicamente documentados en mercados desarrollados. En Argentina hay evidencia de que momentum y value funcionan, pero con horizonte más corto por la volatilidad mayor.",
+      "riesgos_principales": [
+        "Régimen de alta correlación de todo el Merval (eventos políticos generan beta=1)",
+        "Liquidez limitada en algunas acciones del panel impone tamaño máximo de posición",
+        "Cambios estructurales en el panel (entradas/salidas como ECOG)"
+      ],
+      "instrumentos_requeridos": ["acciones_panel_lider"],
+      "depende_de_hitos": ["H1.1", "H1.2"]
+    },
+    {
+      "id": "bonos_macro",
+      "nombre": "Bonos AR con análisis macro asistido por LLM",
+      "familia": "fundamental_macro",
+      "fase_tentativa": 3,
+      "estado": "planificada",
+      "descripcion": "Gestión activa de cartera de bonos hard-dollar AR (AL, GD, AO) basada en señales macro: reservas BCRA, brecha cambiaria, riesgo país implícito, dinámica de inflación. LLM (Claude API) lee noticias económicas y genera scores de sentimiento que alimentan el modelo de decisión.",
+      "edge_teorico": "Los bonos AR reaccionan fuerte a noticias macro. Un sistema disciplinado que procese señales objetivas y subjetivas (vía LLM) puede ser más rápido y menos sesgado que decisiones humanas.",
+      "riesgos_principales": [
+        "Riesgo soberano: default, restructuración, canje obligatorio",
+        "Dependencia de la API del LLM (latencia, costos, calidad de outputs)",
+        "Sentiment analysis puede tener sesgos sistemáticos no detectados"
+      ],
+      "instrumentos_requeridos": ["bonos_usd_ar", "BCRA_*", "INDEC_*"],
+      "depende_de_hitos": ["H1.1", "H1.2", "H1.4"]
+    },
+    {
+      "id": "rulo_mep_ccl",
+      "nombre": "Arbitraje MEP/CCL multi-broker",
+      "familia": "arbitraje_cambiario",
+      "fase_tentativa": 3,
+      "estado": "planificada",
+      "descripcion": "Detectar diferencias entre el dólar MEP y CCL implícitos en distintos brokers, o entre dólar MEP/CCL y cripto stablecoins, que excedan los costos de operación. Ejecutar el 'rulo' completo cuando el spread lo justifique.",
+      "edge_teorico": "Diferencias temporales entre brokers en los precios de AL30/GD30 que generan spreads operables. Costos: comisiones, parking del bono, riesgo de ejecución parcial.",
+      "riesgos_principales": [
+        "Ejecución parcial: uno de los legs no se completa al precio esperado",
+        "Costos ocultos en comisiones de transferencia entre brokers",
+        "Cambio regulatorio sobre operatoria MEP/CCL",
+        "Riesgo de imagen reputacional si la operatoria parece evasiva (no es, pero hay que documentar)"
+      ],
+      "instrumentos_requeridos": ["AL30", "GD30", "DOLAR_MEP", "DOLAR_CCL"],
+      "depende_de_hitos": ["H1.1", "H1.2", "H4.x (acceso multi-broker)"]
+    },
+    {
+      "id": "arb_bonos_ny_local",
+      "nombre": "Arbitraje legal: bonos ley NY vs ley Argentina",
+      "familia": "arbitraje",
+      "fase_tentativa": 3,
+      "estado": "planificada",
+      "descripcion": "Detectar y operar desvíos en el spread entre bonos pares con misma duración pero distinta ley (AL30 vs GD30, AL35 vs GD35, etc.). La diferencia refleja la prima por riesgo legal NY vs ARG. Cuando el spread se desvía más de N desvíos de su media histórica, operar el desbalance esperando convergencia.",
+      "edge_teorico": "Los bonos NY tienen prima por mayor protección legal. Esa prima oscila pero tiene rangos identificables. Eventos políticos pueden hacer fluctuar la prima de forma transitoria.",
+      "riesgos_principales": [
+        "El spread puede ampliarse más antes de revertir (riesgo de drawdown intermedio)",
+        "Evento sistémico que cambie permanentemente la prima (canje, default)",
+        "Liquidez relativa: los AL pueden tener spread bid-ask más ancho en momentos de estrés"
+      ],
+      "instrumentos_requeridos": ["AL29", "AL30", "AL35", "AL41", "GD30", "GD35", "GD38", "GD41"],
+      "depende_de_hitos": ["H1.1", "H1.2"]
+    },
+    {
+      "id": "tendencia_merval",
+      "nombre": "Trend following en panel líder Merval",
+      "familia": "trend_following",
+      "fase_tentativa": 4,
+      "estado": "planificada",
+      "descripcion": "Sistema de seguimiento de tendencias clásico (medias móviles, breakout, ATR-based stops) aplicado al panel líder. Long-only por restricciones operativas de short en AR. Sizing por volatilidad reciente.",
+      "edge_teorico": "Trend following clásico funciona en mercados con momentum persistente. Argentina tiene episodios de momentum fuerte (bull/bear runs) que un sistema disciplinado puede capturar mejor que decisiones discrecionales sesgadas por miedo/codicia.",
+      "riesgos_principales": [
+        "Mercados laterales con whipsaws generan muchos trades perdedores chicos",
+        "Performance dependiente de pocos meses con tendencia clara (concentración temporal)",
+        "Correlación alta dentro del panel: una tendencia es una sola apuesta"
+      ],
+      "instrumentos_requeridos": ["acciones_panel_lider"],
+      "depende_de_hitos": ["H1.1", "H1.2", "factor_merval (validada)"]
+    },
+    {
+      "id": "cash_management",
+      "nombre": "Gestión de tesorería multi-moneda (recomendador)",
+      "familia": "cash_management",
+      "fase_tentativa": 2,
+      "estado": "planificada",
+      "descripcion": "Sistema que monitorea cash en pesos y USD parado en la cuenta, calcula tasas disponibles en distintos instrumentos (Lecaps, Boncap, Boncer, Bopreales, cauciones colocadoras), y RECOMIENDA en qué colocar. Vos ejecutás manualmente. Considera horizonte de uso esperado del cash y restricciones de liquidez.",
+      "edge_teorico": "NO es una estrategia con edge en el sentido tradicional. Es una estrategia de EFICIENCIA: minimiza el costo de oportunidad de cash parado. En Argentina con inflación alta, dejar pesos parados es una pérdida real importante.",
+      "riesgos_principales": [
+        "Riesgo de elegir un instrumento con liquidez insuficiente cuando se necesita el cash",
+        "Riesgo de tasa: si las tasas suben fuerte después de comprar, hay costo de oportunidad",
+        "Boncer asume convergencia inflación-devaluación; si se desacopla, puede haber pérdidas"
+      ],
+      "instrumentos_requeridos": ["bonos_pesos_ar", "bopreales", "cauciones"],
+      "depende_de_hitos": ["H1.1", "H1.2"]
+    },
+    {
+      "id": "cash_management_auto",
+      "nombre": "Gestión de tesorería multi-moneda (automática)",
+      "familia": "cash_management",
+      "fase_tentativa": 5,
+      "estado": "planificada",
+      "descripcion": "Versión automática de cash_management. Roleo automático de Lecaps al vencer, recomposición de carteras según las reglas validadas en cash_management (recomendador). Requiere que la versión recomendador haya operado >90 días con buena performance.",
+      "edge_teorico": "Mismo edge que la versión recomendador, pero con eficiencia operativa (no requiere intervención manual).",
+      "riesgos_principales": [
+        "Errores de ejecución automática pueden ser más graves que en operatoria manual",
+        "Requiere kill switches específicos para evitar loops o sobreoperación",
+        "Compromiso con un broker específico para automatización profunda"
+      ],
+      "instrumentos_requeridos": ["bonos_pesos_ar", "bopreales", "cauciones"],
+      "depende_de_hitos": ["cash_management (90+ días validados)", "H4.x"]
+    }
+  ],
+
+  "consideraciones_futuras": [
+    {
+      "id": "research_assistant",
+      "descripcion": "Capa donde vos planteás hipótesis ('creo que las bancarias se mueven con rezago de 2 días contra el MEP') y el sistema corre el backtest correspondiente con todos los caveats estadísticos. Vos sos el cerebro, el sistema es el ejecutor. NO es búsqueda automática de estrategias - rechazada por riesgo de overfitting y data mining bias. Considerar Fase 5+."
+    },
+    {
+      "id": "carry_trade_caucion_usd",
+      "descripcion": "Tomar USD a tasa baja en caución, convertir a pesos, colocar pesos en caución a tasa alta, hacer roll. Es apuesta direccional al dólar oficial (no neutral). DESCARTADO para Fase 1-3, evaluable en Fase 5+ cuando el sistema esté maduro."
+    },
+    {
+      "id": "derivados",
+      "descripcion": "Futuros DLR (Rofex), opciones sobre acciones líderes y bonos. Mayor complejidad operativa y de modelado. Considerar en Fase 5+."
+    }
+  ]
+}
