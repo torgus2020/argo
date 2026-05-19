@@ -1,7 +1,7 @@
 {
   "meta": {
     "schema_version": "1.0.0",
-    "fecha_ultima_actualizacion": "2026-05-17",
+    "fecha_ultima_actualizacion": "2026-05-19",
     "autor": "Gus + Claude"
   },
   "fases": [
@@ -161,12 +161,12 @@
           "id": "H1.1",
           "nombre": "Schema de base de datos + módulo de persistencia",
           "descripcion": "Diseñar schema de argo.sqlite (instrumentos, cotizaciones_1min, cotizaciones_diarias, macro_indicadores, log_collectors). Escribir src/utils/db.py con SQLAlchemy. Sistema simple de migraciones numeradas.",
-          "estado": "pendiente",
+          "estado": "en_curso",
           "prioridad": "alta",
-          "fecha_inicio": null,
+          "fecha_inicio": "2026-05-19",
           "fecha_cierre_target": null,
           "fecha_cierre_real": null,
-          "depende_de": ["H0.4"],
+          "depende_de": ["H0.2"],
           "entregables": [
             "Schema completo documentado",
             "src/utils/db.py con CRUD básico",
@@ -180,7 +180,7 @@
           "riesgos": [
             "Schema mal diseñado al inicio cuesta mucho refactorear después"
           ],
-          "notas": ""
+          "notas": "Implementación técnica completa el 2026-05-19. Stack: SQLite + SQLAlchemy 2.0 + Alembic 1.18.4 para migraciones. 5 tablas diseñadas: instrumentos (catálogo), cotizaciones_1min (intradía), cotizaciones_diarias (OHLCV diario), macro_indicadores (BCRA/INDEC), log_collectors (auditoría). Modelos en src/utils/models.py (240 líneas), conexión y sesiones en src/utils/db.py (100 líneas) con context manager get_session() para rollback defensivo. Script poblar_instrumentos.py idempotente carga 120 instrumentos desde universe.json (107 físicos + 5 calculados + 8 macro). Aplicado y validado en Windows local y VPS con reproducibilidad total. APRENDIZAJE CLAVE del día: el diseño inicial con UNIQUE en ticker individual falló al insertar AAPL como subyacente_us (ya existía como cedear). Cambio a UniqueConstraint compuesto (ticker, mercado) refleja correctamente el modelo: AAPL en BYMA y AAPL en NASDAQ son instrumentos legítimamente distintos. Lección: validar constraints únicos contra el universo de datos antes de cerrar el schema. PENDIENTE para cierre formal: (1) tests unitarios de los modelos y del script de población, (2) documentación del schema en docs/db_schema.md, (3) validación operativa de 7 días sin errores en logs. 2026-05-19: ajustada dependencia de H0.4 a H0.2 al detectar la misma especie de inconsistencia que con H0.4 (validación temporal en paralelo). PENDIENTE de mejora estructural: agregar estado 'implementado' al modelo para distinguir entre hitos técnicamente completos vs formalmente cerrados — registrado como tarea futura."
         },
         {
           "id": "H1.2",
@@ -283,19 +283,45 @@
     },
     {
       "id": "fase_2",
-      "nombre": "Backtester + primera estrategia",
-      "objetivo": "Engine de backtesting realista y pairs_cedear.py implementada y backtesteada con métricas creíbles.",
+      "nombre": "Backtester + primera estrategia operativa + cash management",
+      "objetivo": "Backtester con slippage y comisiones realistas funcionando. Primera estrategia (pairs_cedear) ejecutándose en backtest. Capa de portfolio management diseñada e implementada. Cash management básico operativo en modo recomendador.",
       "estado": "pendiente",
       "fecha_inicio": null,
       "fecha_cierre_real": null,
       "criterios_cierre": [
-        "Engine que modela slippage y comisiones por broker",
+        "Backtester ejecuta sobre dataset histórico con slippage y comisiones modeladas realisticamente",
         "Walk-forward analysis implementado",
-        "pairs_cedear.py con backtest histórico >= 2 años, Sharpe >= 1.0 backtest",
-        "Reporte automático de métricas estándar",
-        "Regime change testing implementado"
+        "pairs_cedear.py corre en backtest con métricas completas (Sharpe, Sortino, Calmar, drawdown, profit factor)",
+        "Portfolio management layer operativo con reconciliación contra extracto de broker",
+        "cash_management.py operativo en modo recomendador",
+        "Tests unitarios de backtester pasando local y VPS"
       ],
-      "hitos": []
+      "hitos": [
+        {
+          "id": "H2.0",
+          "nombre": "Portfolio Management Layer",
+          "descripcion": "Diseñar e implementar capa de gestión de portfolio: tablas para posiciones, operaciones, eventos de renta fija (cupones, amortizaciones), dividendos cobrados, transferencias entre cuentas, valuación diaria, evolución de PnL. Separada de market data (H1.x) por tener distinta fuente de verdad, frecuencia de actualización y requisitos de auditoría.",
+          "estado": "pendiente",
+          "prioridad": "alta",
+          "fecha_inicio": null,
+          "fecha_cierre_target": null,
+          "fecha_cierre_real": null,
+          "depende_de": ["H1.1"],
+          "entregables": [
+            "Diseño de schema de portfolio (entidad-relación documentado)",
+            "Tablas: posiciones, operaciones, eventos_renta_fija, dividendos, transferencias, valuacion_diaria",
+            "Migración Alembic con la nueva capa",
+            "Script de carga inicial de posiciones desde broker (o manual)",
+            "Tests unitarios"
+          ],
+          "criterios_cuantitativos": [
+            "Schema documentado y revisado antes de tocar código",
+            "Tests unitarios pasando local + VPS",
+            "Reconciliación cero diferencias contra extracto del broker durante 7 días"
+          ],
+          "notas": "Hito identificado durante diseño de H1.1 el 2026-05-19. Decisión deliberada de NO incluirlo en H1.1 porque vamos a aprender qué estructura de datos dan los brokers (Cocos, BIND, IOL) cuando configuremos los respectivos collectors. Diseñar a ciegas ahora generaría rediseños después. Nota del operador: 'diseñar Portfolio Management Layer después de tener experiencia con datos reales de brokers'."
+        }
+      ]
     },
     {
       "id": "fase_3",
