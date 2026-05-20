@@ -50,3 +50,6 @@ pytest-asyncio==0.24.0
 
 # Migraciones
 alembic>=1.13
+
+# Primary
+pyRofex==0.5.0
