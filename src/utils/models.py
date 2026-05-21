@@ -1,8 +1,9 @@
 """
 Modelos de SQLAlchemy para la base de datos de Argo.
 
-Define las cinco tablas principales del sistema:
+Define las tablas principales del sistema:
 - instrumentos: catálogo maestro de instrumentos del universo
+- instrumento_broker_mapping: mapeo de instrumentos a símbolos de cada broker
 - cotizaciones_1min: datos intradía con granularidad de 1 minuto
 - cotizaciones_diarias: datos OHLCV diarios
 - macro_indicadores: indicadores BCRA, INDEC, otras fuentes macro
@@ -72,12 +73,84 @@ class Instrumento(Base):
     cotizaciones_diarias = relationship(
         "CotizacionDiaria", back_populates="instrumento", cascade="all, delete-orphan"
     )
+    broker_mappings = relationship(
+        "InstrumentoBrokerMapping",
+        back_populates="instrumento",
+        cascade="all, delete-orphan",
+    )
+
     __table_args__ = (
         UniqueConstraint("ticker", "mercado", name="uq_instrumento_ticker_mercado"),
     )
 
     def __repr__(self):
         return f"<Instrumento(id={self.id}, ticker='{self.ticker}', tipo='{self.tipo}')>"
+
+
+class InstrumentoBrokerMapping(Base):
+    """
+    Mapeo entre instrumentos del universo Argo y símbolos específicos de cada broker.
+
+    Permite que un instrumento Argo (ej. AL30) tenga múltiples símbolos asociados
+    en distintos brokers (primary, iol, cocos, polygon) y, dentro del mismo broker,
+    múltiples variantes:
+      - moneda de liquidación: ARS, USD_MEP (sufijo D), USD_CCL (sufijo C)
+      - plazos: CI (T+0), 24hs (T+1), 48hs
+
+    Ejemplo para AL30 vía Primary:
+      MERV - XMEV - AL30  - CI    → ARS, plazo CI
+      MERV - XMEV - AL30  - 24hs  → ARS, plazo 24hs
+      MERV - XMEV - AL30D - CI    → USD_MEP, plazo CI
+      MERV - XMEV - AL30C - CI    → USD_CCL, plazo CI
+
+    El campo es_default define qué símbolo responde cuando una estrategia pide
+    "el precio de AL30" sin especificar moneda/plazo. Default inicial: plazo CI,
+    moneda ARS. Se ajusta con data real una vez que tengamos 2-3 días de market
+    data (ver PENDIENTES.md).
+
+    El campo activo=False marca mapeos obsoletos sin borrarlos: los backtests
+    históricos siguen pudiendo resolver símbolos que ya no están en producción.
+
+    La unicidad se garantiza sobre (broker, symbol_externo, plazo) porque un
+    mismo símbolo externo no puede mapear a dos plazos distintos en el mismo
+    broker. NO incluye instrumento_id en el constraint porque el símbolo externo
+    debe ser único globalmente dentro del broker.
+    """
+
+    __tablename__ = "instrumento_broker_mapping"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    instrumento_id = Column(
+        Integer, ForeignKey("instrumentos.id"), nullable=False, index=True
+    )
+    broker = Column(String(20), nullable=False, index=True)
+    symbol_externo = Column(String(80), nullable=False)
+    moneda_liquidacion = Column(String(15), nullable=False)
+    plazo = Column(String(10), nullable=False)
+    es_default = Column(Boolean, nullable=False, default=False)
+    activo = Column(Boolean, nullable=False, default=True)
+    metadata_json = Column(Text, nullable=True)
+    fecha_validacion = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    updated_at = Column(
+        DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
+
+    instrumento = relationship("Instrumento", back_populates="broker_mappings")
+
+    __table_args__ = (
+        UniqueConstraint(
+            "broker", "symbol_externo", "plazo", name="uq_broker_symbol_plazo"
+        ),
+        Index("ix_inst_broker_default", "instrumento_id", "broker", "es_default"),
+    )
+
+    def __repr__(self):
+        return (
+            f"<InstrumentoBrokerMapping(instrumento_id={self.instrumento_id}, "
+            f"broker='{self.broker}', symbol='{self.symbol_externo}', "
+            f"plazo='{self.plazo}', moneda='{self.moneda_liquidacion}')>"
+        )
 
 
 class Cotizacion1Min(Base):
@@ -129,7 +202,7 @@ class CotizacionDiaria(Base):
     Datos OHLCV diarios.
 
     Más chica que cotizaciones_1min: ~25K filas/año. Puede venir directo del
-    histórico de Rava (que tiene granularidad diaria por años) o agregada
+    histórico de Primary (que tiene granularidad diaria por años) o agregada
     desde cotizaciones_1min.
 
     H1.5 va a incluir job que verifica consistencia entre 1-min y daily.
@@ -207,7 +280,7 @@ class LogCollector(Base):
 
     Una fila por cada corrida (job) de cualquier collector. Permite responder
     preguntas como '¿tuvimos datos completos en este período?' o '¿cuántas
-    veces falló Rava en la última semana?'.
+    veces falló Primary en la última semana?'.
 
     El estado 'en_curso' es transitorio: cuando una corrida arranca, se
     inserta la fila con estado en_curso; al terminar, se actualiza con el
