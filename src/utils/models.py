@@ -103,6 +103,11 @@ class InstrumentoBrokerMapping(Base):
       MERV - XMEV - AL30D - CI    → USD_MEP, plazo CI
       MERV - XMEV - AL30C - CI    → USD_CCL, plazo CI
 
+    El campo segmento registra el segmento de mercado del símbolo (ej. MERV =
+    BYMA, donde opera Argo; TIVA = MAE, mayorista; DUAL = futuros). Es dato
+    estructural de ejecución: una estrategia debe saber en qué segmento se
+    negocia el instrumento. Argo opera exclusivamente en MERV.
+
     El campo es_default define qué símbolo responde cuando una estrategia pide
     "el precio de AL30" sin especificar moneda/plazo. Default inicial: plazo CI,
     moneda ARS. Se ajusta con data real una vez que tengamos 2-3 días de market
@@ -125,6 +130,7 @@ class InstrumentoBrokerMapping(Base):
     )
     broker = Column(String(20), nullable=False, index=True)
     symbol_externo = Column(String(80), nullable=False)
+    segmento = Column(String(20), nullable=False)
     moneda_liquidacion = Column(String(15), nullable=False)
     plazo = Column(String(10), nullable=False)
     es_default = Column(Boolean, nullable=False, default=False)
@@ -149,7 +155,8 @@ class InstrumentoBrokerMapping(Base):
         return (
             f"<InstrumentoBrokerMapping(instrumento_id={self.instrumento_id}, "
             f"broker='{self.broker}', symbol='{self.symbol_externo}', "
-            f"plazo='{self.plazo}', moneda='{self.moneda_liquidacion}')>"
+            f"segmento='{self.segmento}', plazo='{self.plazo}', "
+            f"moneda='{self.moneda_liquidacion}')>"
         )
 
 
