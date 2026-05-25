@@ -1,7 +1,7 @@
 {
   "meta": {
     "schema_version": "1.0.0",
-    "fecha_ultima_actualizacion": "2026-05-23",
+    "fecha_ultima_actualizacion": "2026-05-25",
     "autor": "Gus + Claude"
   },
   "fases": [
@@ -150,7 +150,7 @@
       "fecha_inicio": null,
       "fecha_cierre_real": null,
       "criterios_cierre": [
-        "Collectors de Rava, Polygon, BCRA e INDEC funcionando en VPS",
+        "Collectors de Primary/Matriz, Polygon, BCRA e INDEC funcionando en VPS",
         "30 días corridos de datos sin huecos no justificados en argo.sqlite",
         "Sistema de detección de huecos y reintentos operativo",
         "Snapshots crudos en data/raw/ con timestamping",
@@ -184,16 +184,16 @@
         },
         {
           "id": "H1.2",
-          "nombre": "Collector Rava Bursátil",
-          "descripcion": "src/collectors/rava.py se conecta a Rava, descarga histórico inicial del universo definido en config/universe.json, captura 1-min bars en tiempo real. Logueo exhaustivo. Detección y reintento de huecos.",
+          "nombre": "Collector Primary/Matriz (datos AR)",
+          "descripcion": "src/collectors/primary.py se conecta a la Primary API vía pyRofex (reMarkets en desarrollo, producción BIND cuando el permiso esté habilitado), descarga histórico inicial del universo definido en config/universe.json, captura 1-min bars en tiempo real vía WebSocket. Logueo exhaustivo. Detección y reintento de huecos.",
           "estado": "pendiente",
           "prioridad": "alta",
           "fecha_inicio": null,
           "fecha_cierre_target": null,
           "fecha_cierre_real": null,
-          "depende_de": ["H1.1"],
+          "depende_de": ["H1.1", "H1.6"],
           "entregables": [
-            "src/collectors/rava.py funcionando",
+            "src/collectors/primary.py funcionando",
             "config/universe.json con instrumentos iniciales (bonos, panel líder, CEDEARs)",
             "Histórico inicial cargado en argo.sqlite",
             "Logs de collector escritos"
@@ -204,15 +204,15 @@
             "Reintentos automáticos funcionando"
           ],
           "riesgos": [
-            "API de Rava puede tener limitaciones no documentadas",
+            "API de Primary/pyRofex puede tener limitaciones no documentadas",
             "Definir universo es decisión cuantitativa, no trivial"
           ],
-          "notas": ""
+          "notas": "2026-05-25: hito reorientado de 'Collector Rava Bursátil' a 'Collector Primary/Matriz'. La fuente de datos AR definitiva del proyecto es la Primary API (Matriz/BIND) vía pyRofex, no Rava — reMarkets como sandbox de desarrollo, producción BIND cuando el permiso de lectura esté habilitado. El collector depende del mapeo Argo↔Primary (H1.6) para resolver qué símbolo Primary pedir por cada instrumento del universo; por eso depende_de incluye H1.6 aunque sea numéricamente posterior (el orden de ejecución lo expresa depende_de, no el número de hito)."
         },
         {
           "id": "H1.3",
           "nombre": "Collector Polygon.io (subyacente US)",
-          "descripcion": "src/collectors/polygon.py análogo a Rava pero contra Polygon free tier, para underlyings US de CEDEARs.",
+          "descripcion": "src/collectors/polygon.py análogo al collector Primary/Matriz pero contra Polygon free tier, para underlyings US de CEDEARs.",
           "estado": "pendiente",
           "prioridad": "alta",
           "fecha_inicio": null,
@@ -278,6 +278,33 @@
           ],
           "riesgos": [],
           "notas": "Es el guardián de la calidad de datos. Si esto falla, todo lo que viene después está construido sobre arena."
+        },
+        {
+          "id": "H1.6",
+          "nombre": "Mapeo de instrumentos Argo ↔ Primary",
+          "descripcion": "Parser que cruza la tabla `instrumentos` de argo.sqlite contra el catálogo de Primary/Matriz, deriva las variantes de liquidación (base / D = MEP / C = CCL) y produce el mapeo que el collector Primary (H1.2) necesita para resolver qué símbolo Primary pedir por cada instrumento del universo. Maquinaria permanente: el mismo parser corre sobre el catálogo de reMarkets (desarrollo) y sobre el productivo de Matriz/BIND.",
+          "estado": "en_curso",
+          "prioridad": "alta",
+          "fecha_inicio": "2026-05-25",
+          "fecha_cierre_target": null,
+          "fecha_cierre_real": null,
+          "depende_de": ["H1.1"],
+          "entregables": [
+            "src/collectors/generar_mapeo_primary.py — parser de mapeo Argo↔Primary",
+            "JSON de mapeo propuesto generado en data/processed/ (el parser no escribe a la base)",
+            "Revisión humana del mapeo propuesto",
+            "Tabla instrumento_broker_mapping poblada",
+            "Tests unitarios del mapeo"
+          ],
+          "criterios_cuantitativos": [
+            "Parser corre sin errores: 0 símbolos sin parsear, 0 colisiones",
+            "Conteo de filas mapeadas cuadra contra el universo (base + variantes D/C)",
+            "Tests unitarios del mapeo pasando local y VPS"
+          ],
+          "riesgos": [
+            "El catálogo de reMarkets sandbox es errático en varios campos (currency no confiable instrumento por instrumento, priceConvertionFactor inconsistente entre plazos); el mapeo definitivo debe regenerarse contra el catálogo productivo de Matriz/BIND"
+          ],
+          "notas": "Hito incorporado al roadmap el 2026-05-25, en la sesión que reconcilió el roadmap con el trabajo de mapeo ya realizado. Antes se identificaba informalmente como 'H1.2.5' en sesiones, en PENDIENTES.md y en mensajes de commit (04b7d6d, fb57ef2); ese ID nunca fue válido contra roadmap.schema.json, cuyo patrón de id admite un único punto. Se renombra a H1.6 (siguiente número libre, sin renumerar el resto). Los commits viejos conservan la nomenclatura 'H1.2.5' por contexto: no se reescribe historia git por esto. fecha_inicio 2026-05-25 es la fecha de la sesión documentada; si el trabajo de parser arrancó antes, ajustar. Estado de los pasos internos al 2026-05-25: (1) Parser generar_mapeo_primary.py — COMPLETO, reescritura validada contra snapshot de reMarkets, filtro 3 capas (segmento MERV → CFICode → cruce universo), parser de símbolos con regex tolerante, derivación de variantes D/C por sufijo de ticker, detección bidireccional de huérfanos; corrida OK con 50 filas propuestas (22 base / 16 D / 12 C), 0 sin parsear, 0 colisiones. (2) Revisión humana del mapeo propuesto — COMPLETA; currency de reMarkets descartada como fuente por inconsistente, criterio adoptado 'el ticker manda, currency audita', conteo de 70 mapeables cuadrado. (3) Poblado de instrumento_broker_mapping — PENDIENTE; la tabla existe (13 columnas) pero está vacía, decisión deliberada de NO poblar contra reMarkets sandbox porque sería trabajo descartable. (4) Tests unitarios del mapeo — PENDIENTE; mismo motivo, testear contra un mapeo de sandbox que se va a regenerar no tiene sentido. DEPENDENCIA EXTERNA, no modelada como hito por decisión deliberada: el poblado y los tests del mapeo dependen del acceso productivo de solo lectura a BIND/Matriz, gestión en curso con BIND (Patricio), de resolución esperada en 24-48hs. Se documenta acá en lugar de crear un hito-trámite porque un trámite que será historia en dos días no justifica un hito propio. Cuando el catálogo productivo esté disponible: correr el mismo parser sobre ese snapshot, revisión humana productiva, poblar la tabla, escribir los tests. La distinción que ordena todo esto es maquinaria vs contenido: el parser es maquinaria permanente y ya está validado; el mapeo concreto es contenido que se regenera con el catálogo bueno."
         }
       ]
     },
