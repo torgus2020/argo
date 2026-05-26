@@ -80,13 +80,16 @@ def _upsert_instrumento(session, datos_instrumento: dict, categoria: str) -> str
     """
     ticker = datos_instrumento["ticker"]
 
-    # Buscar si ya existe
-    existente = session.query(Instrumento).filter_by(ticker=ticker).first()
-
+    
     # Preparar campos con defaults para categorías con info incompleta
     tipo = datos_instrumento.get("tipo", categoria)
     nombre = datos_instrumento.get("nombre", ticker)
     mercado = datos_instrumento.get("mercado", "N/A")
+    # Buscar si ya existe, usando la clave compuesta (ticker, mercado).
+    # Es el aprendizaje de H1.1: AAPL como CEDEAR y AAPL como subyacente
+    # son instrumentos distintos. Buscar solo por ticker los colapsaria.
+    existente = session.query(Instrumento).filter_by(ticker=ticker, mercado=mercado).first()
+
     moneda = datos_instrumento.get("moneda", "N/A")
     fuente = datos_instrumento.get("fuente", "calculado")
     activo = datos_instrumento.get("activo", True)
