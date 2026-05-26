@@ -2,12 +2,18 @@
 Script de población inicial de la tabla 'instrumentos' desde config/universe.json.
 
 Lee el universo definido y carga cada instrumento en la base de datos.
-Es idempotente: si un instrumento ya existe (mismo ticker), lo actualiza;
-si no existe, lo inserta. Nunca borra instrumentos (para preservar referencias
-históricas en cotizaciones).
+Es idempotente: si un instrumento ya existe (misma clave compuesta ticker +
+mercado), lo actualiza; si no existe, lo inserta. Nunca borra instrumentos
+(para preservar referencias históricas en cotizaciones).
 
 Uso:
     python scripts/poblar_instrumentos.py
+
+La función poblar() acepta inyección de dependencias (session_factory,
+universe_path) para poder testearse contra una base en memoria y un
+universe.json de fixture, sin tocar la base ni la configuración real.
+La ejecución normal del script no usa esos parámetros: con los defaults
+se comporta exactamente como antes.
 
 Categorías procesadas:
 - bonos_usd_ar
@@ -28,6 +34,7 @@ Devuelve código de salida:
 
 import json
 import sys
+from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
 
@@ -57,20 +64,24 @@ CATEGORIAS_A_PROCESAR = [
 ]
 
 
-def _cargar_universe() -> dict:
+def _cargar_universe(universe_path: Path) -> dict:
     """
-    Lee y parsea config/universe.json. Devuelve el dict completo.
-    Levanta excepción si hay problemas — el caller decide qué hacer.
+    Lee y parsea el universe.json ubicado en 'universe_path'. Devuelve el
+    dict completo. Levanta excepción si hay problemas — el caller decide
+    qué hacer.
+
+    El path se recibe por parámetro (en vez de leer la constante de módulo)
+    para permitir que los tests apunten a un universe.json de fixture.
     """
-    if not _RUTA_UNIVERSE.exists():
-        raise FileNotFoundError(f"No se encontró {_RUTA_UNIVERSE}")
-    with open(_RUTA_UNIVERSE, encoding="utf-8") as f:
+    if not universe_path.exists():
+        raise FileNotFoundError(f"No se encontró {universe_path}")
+    with open(universe_path, encoding="utf-8") as f:
         return json.load(f)
 
 
 def _upsert_instrumento(session, datos_instrumento: dict, categoria: str) -> str:
     """
-    Inserta o actualiza un instrumento según su ticker.
+    Inserta o actualiza un instrumento según su clave compuesta (ticker, mercado).
 
     Para las categorías 'macro' y 'calculados', los campos pueden venir
     incompletos (no tienen mercado/moneda en el sentido tradicional). Se
@@ -80,11 +91,11 @@ def _upsert_instrumento(session, datos_instrumento: dict, categoria: str) -> str
     """
     ticker = datos_instrumento["ticker"]
 
-    
     # Preparar campos con defaults para categorías con info incompleta
     tipo = datos_instrumento.get("tipo", categoria)
     nombre = datos_instrumento.get("nombre", ticker)
     mercado = datos_instrumento.get("mercado", "N/A")
+
     # Buscar si ya existe, usando la clave compuesta (ticker, mercado).
     # Es el aprendizaje de H1.1: AAPL como CEDEAR y AAPL como subyacente
     # son instrumentos distintos. Buscar solo por ticker los colapsaria.
@@ -123,7 +134,10 @@ def _upsert_instrumento(session, datos_instrumento: dict, categoria: str) -> str
         return "insertado"
 
 
-def poblar() -> dict:
+def poblar(
+    session_factory: Callable | None = None,
+    universe_path: Path | None = None,
+) -> dict:
     """
     Ejecuta la población completa. Devuelve un dict con estadísticas:
     - total_procesados
@@ -131,11 +145,29 @@ def poblar() -> dict:
     - actualizados
     - por_categoria
 
+    Parámetros (inyección de dependencias, opcionales):
+    - session_factory: callable que, invocado sin argumentos, devuelve un
+      context manager de sesión (con .commit()). Default: get_session, la
+      sesión contra la base real del proyecto. Los tests inyectan acá una
+      factory ligada a un engine SQLite en memoria.
+    - universe_path: ruta al universe.json a leer. Default: _RUTA_UNIVERSE
+      (config/universe.json). Los tests inyectan acá un fixture.
+
+    Con ambos parámetros en None se comporta exactamente como la ejecución
+    productiva de siempre.
+
     Si hay error, levanta excepción.
     """
+    # Resolver los defaults: si el caller no inyecta nada, se usa lo de
+    # siempre (base real + universe.json productivo).
+    if session_factory is None:
+        session_factory = get_session
+    if universe_path is None:
+        universe_path = _RUTA_UNIVERSE
+
     _log.info("Iniciando población de instrumentos desde universe.json")
 
-    universe = _cargar_universe()
+    universe = _cargar_universe(universe_path)
 
     stats = {
         "total_procesados": 0,
@@ -144,7 +176,7 @@ def poblar() -> dict:
         "por_categoria": {},
     }
 
-    with get_session() as session:
+    with session_factory() as session:
         for categoria in CATEGORIAS_A_PROCESAR:
             if categoria not in universe:
                 _log.warning(f"Categoría '{categoria}' no encontrada en universe.json")
@@ -180,6 +212,9 @@ def poblar() -> dict:
 def main() -> int:
     """
     Función principal. Devuelve código de salida.
+
+    Llama a poblar() sin argumentos: usa los defaults (base real y
+    universe.json productivo).
     """
     try:
         stats = poblar()
