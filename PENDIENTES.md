@@ -54,6 +54,20 @@ Cosas identificadas a lo largo del desarrollo que no califican como hitos del ro
 
 ---
 
+### secrets.json del VPS sin bloque primary_remarkets
+
+**Prioridad:** media
+**Identificado:** 2026-05-27 durante limpieza de Rava
+**Descripción:** El secrets.json del VPS nunca tuvo el bloque
+`primary_remarkets`. El de local sí lo tiene. Hoy ningún proceso del
+VPS lo necesita (heartbeat y roadmap engine no tocan Primary), por eso
+no rompió nada. Pero hay que sincronizarlo desde local ANTES de levantar
+collectors de datos AR en el VPS (hito H1.x). Si un collector arranca en
+el VPS sin ese bloque, va a fallar la autenticación contra Primary.
+**Estado:** pendiente
+
+---
+
 ### universe.json: actualización con catálogo productivo de Matriz
 
 **Identificado:** 2026-05-25 durante H1.2.5.6.
