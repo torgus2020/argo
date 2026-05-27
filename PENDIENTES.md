@@ -205,6 +205,22 @@ revisión o tabla de versiones. No bloquea nada actualmente.
 
 ---
 
+### Auditoría de arquitectura y diseño al cerrar Fase 1
+
+**Prioridad:** baja
+**Identificado:** 2026-05-27
+**Descripción:** Al terminar la Fase 1 (infraestructura de datos / hitos
+H1.x), hacer una revisión integral de estructura, diseño y arquitectura:
+las seis capas del pipeline, el schema, el flujo de datos, las decisiones
+de diseño, contra cómo lo haría un fondo cuantitativo serio. Se difiere a
+ese momento a propósito: hoy las capas 3-6 son mayormente plan, no código
+corriendo; auditar a fondo rinde cuando haya algo concreto que auditar
+(schema cerrado, collectors corriendo, datos reales). Es una sesión
+dedicada, no un paso dentro de otra.
+**Estado:** pendiente
+
+---
+
 ### Refactor datetime.utcnow() → datetime.now(timezone.utc)
 
 **Identificado:** Sesión 2026-05-24.
