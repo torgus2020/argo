@@ -9,7 +9,7 @@ Define las tablas principales del sistema:
 - macro_indicadores: indicadores BCRA, INDEC, otras fuentes macro
 - log_collectors: auditoría de corridas de collectors
 
-Decisiones de diseño documentadas en docs/db_schema.md (creado en H1.1.8).
+Decisiones de diseño documentadas en docs/db_schema.md.
 
 Los modelos NO contienen lógica de negocio. Solo definen estructura y relaciones.
 La lógica vive en src/utils/db.py (conexión, sesiones) y módulos específicos

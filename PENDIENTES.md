@@ -190,6 +190,21 @@ asyncio_default_fixture_loop_scope = "function"
 
 ---
 
+### macro_indicadores: versionado de revisiones de indicadores
+
+**Prioridad:** baja
+**Identificado:** 2026-05-27 durante revisión del schema
+**Descripción:** macro_indicadores guarda un solo valor por (indicador,
+fecha). Cuando una fuente revisa un dato (ej. INDEC corrige el IPC: dato
+preliminar vs definitivo), el valor nuevo pisa al viejo. Hoy es correcto:
+las estrategias quieren el mejor dato disponible. Solo importaría para
+backtests point-in-time estrictos (reconstruir qué sabía el sistema en una
+fecha pasada). Si se necesita, es un cambio barato: columna opcional de
+revisión o tabla de versiones. No bloquea nada actualmente.
+**Estado:** pendiente
+
+---
+
 ### Refactor datetime.utcnow() → datetime.now(timezone.utc)
 
 **Identificado:** Sesión 2026-05-24.
