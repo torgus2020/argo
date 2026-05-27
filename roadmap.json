@@ -1,7 +1,7 @@
 {
   "meta": {
     "schema_version": "1.0.0",
-    "fecha_ultima_actualizacion": "2026-05-25",
+    "fecha_ultima_actualizacion": "2026-05-27",
     "autor": "Gus + Claude"
   },
   "fases": [
@@ -65,7 +65,9 @@
           "fecha_inicio": "2026-05-12",
           "fecha_cierre_target": null,
           "fecha_cierre_real": "2026-05-14",
-          "depende_de": ["H0.1"],
+          "depende_de": [
+            "H0.1"
+          ],
           "entregables": [
             "VPS Ubuntu LTS operativo (DigitalOcean Basic Droplet en NYC3, USD 12/mes)",
             "Acceso SSH con clave pública/privada (password disabled)",
@@ -98,7 +100,9 @@
           "fecha_inicio": "2026-05-15",
           "fecha_cierre_target": null,
           "fecha_cierre_real": "2026-05-23",
-          "depende_de": ["H0.2"],
+          "depende_de": [
+            "H0.2"
+          ],
           "entregables": [
             "Bot creado con BotFather, token en secrets.json (local y VPS)",
             "src/utils/telegram_notifier.py con función enviar_alerta(mensaje, nivel)",
@@ -123,7 +127,10 @@
           "fecha_inicio": "2026-05-16",
           "fecha_cierre_target": null,
           "fecha_cierre_real": "2026-05-23",
-          "depende_de": ["H0.1", "H0.2"],
+          "depende_de": [
+            "H0.1",
+            "H0.2"
+          ],
           "entregables": [
             "src/roadmap/engine.py funcionando",
             "Cron diario a las 9 AM hora Buenos Aires",
@@ -161,12 +168,14 @@
           "id": "H1.1",
           "nombre": "Schema de base de datos + módulo de persistencia",
           "descripcion": "Diseñar schema de argo.sqlite (instrumentos, cotizaciones_1min, cotizaciones_diarias, macro_indicadores, log_collectors). Escribir src/utils/db.py con SQLAlchemy. Sistema simple de migraciones numeradas.",
-          "estado": "en_curso",
+          "estado": "cerrado",
           "prioridad": "alta",
           "fecha_inicio": "2026-05-19",
           "fecha_cierre_target": null,
-          "fecha_cierre_real": null,
-          "depende_de": ["H0.2"],
+          "fecha_cierre_real": "2026-05-27",
+          "depende_de": [
+            "H0.2"
+          ],
           "entregables": [
             "Schema completo documentado",
             "src/utils/db.py con CRUD básico",
@@ -180,7 +189,7 @@
           "riesgos": [
             "Schema mal diseñado al inicio cuesta mucho refactorear después"
           ],
-          "notas": "Implementación técnica completa el 2026-05-19. Stack: SQLite + SQLAlchemy 2.0 + Alembic 1.18.4 para migraciones. 5 tablas diseñadas: instrumentos (catálogo), cotizaciones_1min (intradía), cotizaciones_diarias (OHLCV diario), macro_indicadores (BCRA/INDEC), log_collectors (auditoría). Modelos en src/utils/models.py (240 líneas), conexión y sesiones en src/utils/db.py (100 líneas) con context manager get_session() para rollback defensivo. Script poblar_instrumentos.py idempotente carga 120 instrumentos desde universe.json (107 físicos + 5 calculados + 8 macro). Aplicado y validado en Windows local y VPS con reproducibilidad total. APRENDIZAJE CLAVE del día: el diseño inicial con UNIQUE en ticker individual falló al insertar AAPL como subyacente_us (ya existía como cedear). Cambio a UniqueConstraint compuesto (ticker, mercado) refleja correctamente el modelo: AAPL en BYMA y AAPL en NASDAQ son instrumentos legítimamente distintos. Lección: validar constraints únicos contra el universo de datos antes de cerrar el schema. PENDIENTE para cierre formal: (1) tests unitarios de los modelos y del script de población, (2) documentación del schema en docs/db_schema.md, (3) validación operativa de 7 días sin errores en logs. 2026-05-19: ajustada dependencia de H0.4 a H0.2 al detectar la misma especie de inconsistencia que con H0.4 (validación temporal en paralelo). PENDIENTE de mejora estructural: agregar estado 'implementado' al modelo para distinguir entre hitos técnicamente completos vs formalmente cerrados — registrado como tarea futura."
+          "notas": "Implementación técnica completa el 2026-05-19. Stack: SQLite + SQLAlchemy 2.0 + Alembic 1.18.4 para migraciones. 5 tablas diseñadas: instrumentos (catálogo), cotizaciones_1min (intradía), cotizaciones_diarias (OHLCV diario), macro_indicadores (BCRA/INDEC), log_collectors (auditoría). Modelos en src/utils/models.py (240 líneas), conexión y sesiones en src/utils/db.py (100 líneas) con context manager get_session() para rollback defensivo. Script poblar_instrumentos.py idempotente carga 120 instrumentos desde universe.json (107 físicos + 5 calculados + 8 macro). Aplicado y validado en Windows local y VPS con reproducibilidad total. APRENDIZAJE CLAVE del día: el diseño inicial con UNIQUE en ticker individual falló al insertar AAPL como subyacente_us (ya existía como cedear). Cambio a UniqueConstraint compuesto (ticker, mercado) refleja correctamente el modelo: AAPL en BYMA y AAPL en NASDAQ son instrumentos legítimamente distintos. Lección: validar constraints únicos contra el universo de datos antes de cerrar el schema. PENDIENTE para cierre formal: (1) tests unitarios de los modelos y del script de población, (2) documentación del schema en docs/db_schema.md, (3) validación operativa de 7 días sin errores en logs. 2026-05-19: ajustada dependencia de H0.4 a H0.2 al detectar la misma especie de inconsistencia que con H0.4 (validación temporal en paralelo). PENDIENTE de mejora estructural: agregar estado 'implementado' al modelo para distinguir entre hitos técnicamente completos vs formalmente cerrados — registrado como tarea futura. CIERRE 2026-05-27: criterios (1) tests unitarios y (2) docs/db_schema.md completos en commits 3433d31 (2026-05-26) y be6827a (2026-05-27). El criterio (3) 'validación operativa de 7 días sin errores en logs' no aplica con el modelo de estados actual: H1.1 es schema + persistencia, no hay proceso que corra 7 días sobre la base sin un collector. Es el caso típico que motivó registrar la deuda 'Modelo de estados del roadmap engine' (estado 'implementado') en PENDIENTES.md, prioridad media. Se cierra alineando el roadmap con la realidad operativa."
         },
         {
           "id": "H1.2",
@@ -191,7 +200,10 @@
           "fecha_inicio": null,
           "fecha_cierre_target": null,
           "fecha_cierre_real": null,
-          "depende_de": ["H1.1", "H1.6"],
+          "depende_de": [
+            "H1.1",
+            "H1.6"
+          ],
           "entregables": [
             "src/collectors/primary.py funcionando",
             "config/universe.json con instrumentos iniciales (bonos, panel líder, CEDEARs)",
@@ -218,7 +230,9 @@
           "fecha_inicio": null,
           "fecha_cierre_target": null,
           "fecha_cierre_real": null,
-          "depende_de": ["H1.1"],
+          "depende_de": [
+            "H1.1"
+          ],
           "entregables": [
             "src/collectors/polygon.py funcionando",
             "Datos en SQLite",
@@ -242,7 +256,9 @@
           "fecha_inicio": null,
           "fecha_cierre_target": null,
           "fecha_cierre_real": null,
-          "depende_de": ["H1.1"],
+          "depende_de": [
+            "H1.1"
+          ],
           "entregables": [
             "src/collectors/bcra.py funcionando",
             "src/collectors/indec.py funcionando",
@@ -266,7 +282,11 @@
           "fecha_inicio": null,
           "fecha_cierre_target": null,
           "fecha_cierre_real": null,
-          "depende_de": ["H1.2", "H1.3", "H1.4"],
+          "depende_de": [
+            "H1.2",
+            "H1.3",
+            "H1.4"
+          ],
           "entregables": [
             "src/collectors/gap_detector.py",
             "Cron diario",
@@ -288,7 +308,9 @@
           "fecha_inicio": "2026-05-25",
           "fecha_cierre_target": null,
           "fecha_cierre_real": null,
-          "depende_de": ["H1.1"],
+          "depende_de": [
+            "H1.1"
+          ],
           "entregables": [
             "src/collectors/generar_mapeo_primary.py — parser de mapeo Argo↔Primary",
             "JSON de mapeo propuesto generado en data/processed/ (el parser no escribe a la base)",
@@ -333,7 +355,9 @@
           "fecha_inicio": null,
           "fecha_cierre_target": null,
           "fecha_cierre_real": null,
-          "depende_de": ["H1.1"],
+          "depende_de": [
+            "H1.1"
+          ],
           "entregables": [
             "Diseño de schema de portfolio (entidad-relación documentado)",
             "Tablas: posiciones, operaciones, eventos_renta_fija, dividendos, transferencias, valuacion_diaria",
@@ -407,7 +431,10 @@
     "dias_anticipacion_target": 3,
     "hora_corrida": "09:00",
     "timezone": "America/Argentina/Buenos_Aires",
-    "canales": ["telegram", "log"],
+    "canales": [
+      "telegram",
+      "log"
+    ],
     "silencio_si_todo_ok": true
   }
 }
