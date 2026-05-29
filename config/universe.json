@@ -1,12 +1,12 @@
 {
   "meta": {
     "schema_version": "1.0.0",
-    "fecha_ultima_actualizacion": "2026-05-17",
+    "fecha_ultima_actualizacion": "2026-05-28",
     "descripcion": "Universo de instrumentos del sistema Argo. Curado según criterios de liquidez, volumen, y necesidades de las estrategias planificadas en el roadmap.",
     "criterios_inclusion": [
       "Volumen diario consistente en sus mercados respectivos",
       "Vinculación a alguna estrategia del roadmap (actual o futura)",
-      "Disponibilidad de datos via APIs contratadas (Rava, Polygon, BCRA, INDEC)",
+      "Disponibilidad de datos via APIs contratadas (Primary, Polygon, BCRA, INDEC)",
       "Sin instrumentos con liquidez inestable o spreads bid-ask anchos persistentes"
     ],
     "criterios_exclusion": [
@@ -20,154 +20,1556 @@
     "total_instrumentos_fisicos": 107,
     "total_con_macro": 115
   },
-
   "bonos_usd_ar": [
-    {"ticker": "AL29", "tipo": "bono_usd_ar", "nombre": "Bono USD 2029 Ley Argentina", "mercado": "BYMA", "moneda": "USD", "fuente": "rava", "activo": true, "metadata": {"vencimiento": "2029-07-09", "ley": "ARG", "ratio_canje": 1.0}},
-    {"ticker": "AL30", "tipo": "bono_usd_ar", "nombre": "Bono USD 2030 Ley Argentina", "mercado": "BYMA", "moneda": "USD", "fuente": "rava", "activo": true, "metadata": {"vencimiento": "2030-07-09", "ley": "ARG", "ratio_canje": 1.0}},
-    {"ticker": "AL35", "tipo": "bono_usd_ar", "nombre": "Bono USD 2035 Ley Argentina", "mercado": "BYMA", "moneda": "USD", "fuente": "rava", "activo": true, "metadata": {"vencimiento": "2035-07-09", "ley": "ARG", "ratio_canje": 1.0}},
-    {"ticker": "AL41", "tipo": "bono_usd_ar", "nombre": "Bono USD 2041 Ley Argentina", "mercado": "BYMA", "moneda": "USD", "fuente": "rava", "activo": true, "metadata": {"vencimiento": "2041-07-09", "ley": "ARG", "ratio_canje": 1.0}},
-    {"ticker": "AE38", "tipo": "bono_usd_ar", "nombre": "Bono USD 2038 Ley Argentina", "mercado": "BYMA", "moneda": "USD", "fuente": "rava", "activo": true, "metadata": {"vencimiento": "2038-01-09", "ley": "ARG", "ratio_canje": 1.0}},
-    {"ticker": "GD30", "tipo": "bono_usd_ar", "nombre": "Bono Global USD 2030 Ley NY", "mercado": "BYMA", "moneda": "USD", "fuente": "rava", "activo": true, "metadata": {"vencimiento": "2030-07-09", "ley": "NY", "ratio_canje": 1.0}},
-    {"ticker": "GD35", "tipo": "bono_usd_ar", "nombre": "Bono Global USD 2035 Ley NY", "mercado": "BYMA", "moneda": "USD", "fuente": "rava", "activo": true, "metadata": {"vencimiento": "2035-07-09", "ley": "NY", "ratio_canje": 1.0}},
-    {"ticker": "GD38", "tipo": "bono_usd_ar", "nombre": "Bono Global USD 2038 Ley NY", "mercado": "BYMA", "moneda": "USD", "fuente": "rava", "activo": true, "metadata": {"vencimiento": "2038-01-09", "ley": "NY", "ratio_canje": 1.0}},
-    {"ticker": "GD41", "tipo": "bono_usd_ar", "nombre": "Bono Global USD 2041 Ley NY", "mercado": "BYMA", "moneda": "USD", "fuente": "rava", "activo": true, "metadata": {"vencimiento": "2041-07-09", "ley": "NY", "ratio_canje": 1.0}},
-    {"ticker": "AO27", "tipo": "bono_usd_ar", "nombre": "Bonar 2027 USD 6%", "mercado": "BYMA", "moneda": "USD", "fuente": "rava", "activo": true, "metadata": {"vencimiento": "2027-10-28", "ley": "ARG", "cupon": 0.06, "emision": "post-salida-cepo"}},
-    {"ticker": "AO28", "tipo": "bono_usd_ar", "nombre": "Bonar 2028 USD 6%", "mercado": "BYMA", "moneda": "USD", "fuente": "rava", "activo": true, "metadata": {"vencimiento": "2028-10-30", "ley": "ARG", "cupon": 0.06, "emision": "post-salida-cepo"}},
-    {"ticker": "BPOA7", "tipo": "bopreal", "nombre": "Bopreal Serie 1", "mercado": "BYMA", "moneda": "USD", "fuente": "rava", "activo": true, "metadata": {"emisor": "BCRA", "serie": 1}},
-    {"ticker": "BPOB7", "tipo": "bopreal", "nombre": "Bopreal Serie 2", "mercado": "BYMA", "moneda": "USD", "fuente": "rava", "activo": true, "metadata": {"emisor": "BCRA", "serie": 2}},
-    {"ticker": "BPOC7", "tipo": "bopreal", "nombre": "Bopreal Serie 3", "mercado": "BYMA", "moneda": "USD", "fuente": "rava", "activo": true, "metadata": {"emisor": "BCRA", "serie": 3}},
-    {"ticker": "BPOD7", "tipo": "bopreal", "nombre": "Bopreal Serie 4", "mercado": "BYMA", "moneda": "USD", "fuente": "rava", "activo": true, "metadata": {"emisor": "BCRA", "serie": 4}}
+    {
+      "ticker": "AL29",
+      "tipo": "bono_usd_ar",
+      "nombre": "Bono USD 2029 Ley Argentina",
+      "mercado": "BYMA",
+      "moneda": "USD",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "vencimiento": "2029-07-09",
+        "ley": "ARG",
+        "ratio_canje": 1.0
+      }
+    },
+    {
+      "ticker": "AL30",
+      "tipo": "bono_usd_ar",
+      "nombre": "Bono USD 2030 Ley Argentina",
+      "mercado": "BYMA",
+      "moneda": "USD",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "vencimiento": "2030-07-09",
+        "ley": "ARG",
+        "ratio_canje": 1.0
+      }
+    },
+    {
+      "ticker": "AL35",
+      "tipo": "bono_usd_ar",
+      "nombre": "Bono USD 2035 Ley Argentina",
+      "mercado": "BYMA",
+      "moneda": "USD",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "vencimiento": "2035-07-09",
+        "ley": "ARG",
+        "ratio_canje": 1.0
+      }
+    },
+    {
+      "ticker": "AL41",
+      "tipo": "bono_usd_ar",
+      "nombre": "Bono USD 2041 Ley Argentina",
+      "mercado": "BYMA",
+      "moneda": "USD",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "vencimiento": "2041-07-09",
+        "ley": "ARG",
+        "ratio_canje": 1.0
+      }
+    },
+    {
+      "ticker": "AE38",
+      "tipo": "bono_usd_ar",
+      "nombre": "Bono USD 2038 Ley Argentina",
+      "mercado": "BYMA",
+      "moneda": "USD",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "vencimiento": "2038-01-09",
+        "ley": "ARG",
+        "ratio_canje": 1.0
+      }
+    },
+    {
+      "ticker": "GD30",
+      "tipo": "bono_usd_ar",
+      "nombre": "Bono Global USD 2030 Ley NY",
+      "mercado": "BYMA",
+      "moneda": "USD",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "vencimiento": "2030-07-09",
+        "ley": "NY",
+        "ratio_canje": 1.0
+      }
+    },
+    {
+      "ticker": "GD35",
+      "tipo": "bono_usd_ar",
+      "nombre": "Bono Global USD 2035 Ley NY",
+      "mercado": "BYMA",
+      "moneda": "USD",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "vencimiento": "2035-07-09",
+        "ley": "NY",
+        "ratio_canje": 1.0
+      }
+    },
+    {
+      "ticker": "GD38",
+      "tipo": "bono_usd_ar",
+      "nombre": "Bono Global USD 2038 Ley NY",
+      "mercado": "BYMA",
+      "moneda": "USD",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "vencimiento": "2038-01-09",
+        "ley": "NY",
+        "ratio_canje": 1.0
+      }
+    },
+    {
+      "ticker": "GD41",
+      "tipo": "bono_usd_ar",
+      "nombre": "Bono Global USD 2041 Ley NY",
+      "mercado": "BYMA",
+      "moneda": "USD",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "vencimiento": "2041-07-09",
+        "ley": "NY",
+        "ratio_canje": 1.0
+      }
+    },
+    {
+      "ticker": "AO27",
+      "tipo": "bono_usd_ar",
+      "nombre": "Bonar 2027 USD 6%",
+      "mercado": "BYMA",
+      "moneda": "USD",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "vencimiento": "2027-10-28",
+        "ley": "ARG",
+        "cupon": 0.06,
+        "emision": "post-salida-cepo"
+      }
+    },
+    {
+      "ticker": "AO28",
+      "tipo": "bono_usd_ar",
+      "nombre": "Bonar 2028 USD 6%",
+      "mercado": "BYMA",
+      "moneda": "USD",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "vencimiento": "2028-10-30",
+        "ley": "ARG",
+        "cupon": 0.06,
+        "emision": "post-salida-cepo"
+      }
+    },
+    {
+      "ticker": "BPOA7",
+      "tipo": "bopreal",
+      "nombre": "Bopreal Serie 1",
+      "mercado": "BYMA",
+      "moneda": "USD",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "emisor": "BCRA",
+        "serie": 1
+      }
+    },
+    {
+      "ticker": "BPOB7",
+      "tipo": "bopreal",
+      "nombre": "Bopreal Serie 2",
+      "mercado": "BYMA",
+      "moneda": "USD",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "emisor": "BCRA",
+        "serie": 2
+      }
+    },
+    {
+      "ticker": "BPOC7",
+      "tipo": "bopreal",
+      "nombre": "Bopreal Serie 3",
+      "mercado": "BYMA",
+      "moneda": "USD",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "emisor": "BCRA",
+        "serie": 3
+      }
+    },
+    {
+      "ticker": "BPOD7",
+      "tipo": "bopreal",
+      "nombre": "Bopreal Serie 4",
+      "mercado": "BYMA",
+      "moneda": "USD",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "emisor": "BCRA",
+        "serie": 4
+      }
+    }
   ],
-
   "bonos_pesos_ar": [
-    {"ticker": "S15A6", "tipo": "lecap", "nombre": "Lecap 15 abril 2026", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"vencimiento": "2026-04-15", "tipo_tasa": "fija", "rotativo": true}},
-    {"ticker": "S31M6", "tipo": "lecap", "nombre": "Lecap 31 marzo 2026", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"vencimiento": "2026-03-31", "tipo_tasa": "fija", "rotativo": true}},
-    {"ticker": "S14B6", "tipo": "lecap", "nombre": "Lecap 14 febrero 2026", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"vencimiento": "2026-02-14", "tipo_tasa": "fija", "rotativo": true}},
-    {"ticker": "TO26", "tipo": "boncap", "nombre": "Boncap 2026", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"vencimiento": "2026-10-17", "tipo_tasa": "fija"}},
-    {"ticker": "TO27", "tipo": "boncap", "nombre": "Boncap 2027", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"vencimiento": "2027-04-17", "tipo_tasa": "fija"}},
-    {"ticker": "TX26", "tipo": "boncer", "nombre": "Boncer 2026", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"vencimiento": "2026-11-09", "tipo_tasa": "CER"}},
-    {"ticker": "TX28", "tipo": "boncer", "nombre": "Boncer 2028", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"vencimiento": "2028-11-09", "tipo_tasa": "CER"}},
-    {"ticker": "TZX27", "tipo": "boncer", "nombre": "Boncer Zero 2027", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"vencimiento": "2027-06-30", "tipo_tasa": "CER"}},
-    {"ticker": "TZX28", "tipo": "boncer", "nombre": "Boncer Zero 2028", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"vencimiento": "2028-06-30", "tipo_tasa": "CER"}}
+    {
+      "ticker": "S15A6",
+      "tipo": "lecap",
+      "nombre": "Lecap 15 abril 2026",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": false,
+      "metadata": {
+        "vencimiento": "2026-04-15",
+        "tipo_tasa": "fija",
+        "rotativo": true,
+        "nota_jubilacion": "Vencida antes de 2026-05-28; reemplazar por LECAP viva en próxima curaduría del universo"
+      }
+    },
+    {
+      "ticker": "S31M6",
+      "tipo": "lecap",
+      "nombre": "Lecap 31 marzo 2026",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": false,
+      "metadata": {
+        "vencimiento": "2026-03-31",
+        "tipo_tasa": "fija",
+        "rotativo": true,
+        "nota_jubilacion": "Vencida antes de 2026-05-28; reemplazar por LECAP viva en próxima curaduría del universo"
+      }
+    },
+    {
+      "ticker": "S14B6",
+      "tipo": "lecap",
+      "nombre": "Lecap 14 febrero 2026",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": false,
+      "metadata": {
+        "vencimiento": "2026-02-14",
+        "tipo_tasa": "fija",
+        "rotativo": true,
+        "nota_jubilacion": "Vencida antes de 2026-05-28; reemplazar por LECAP viva en próxima curaduría del universo"
+      }
+    },
+    {
+      "ticker": "TO26",
+      "tipo": "boncap",
+      "nombre": "Boncap 2026",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "vencimiento": "2026-10-17",
+        "tipo_tasa": "fija"
+      }
+    },
+    {
+      "ticker": "TO27",
+      "tipo": "boncap",
+      "nombre": "Boncap 2027",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": false,
+      "metadata": {
+        "vencimiento": "2027-04-17",
+        "tipo_tasa": "fija",
+        "nota_jubilacion": "No listado en catálogo productivo BIND al 2026-05-27 (sin liquidez/no ofrecido por el broker). Reactivar si BIND lo incorpora; verificar en futuros snapshots."
+      }
+    },
+    {
+      "ticker": "TX26",
+      "tipo": "boncer",
+      "nombre": "Boncer 2026",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "vencimiento": "2026-11-09",
+        "tipo_tasa": "CER"
+      }
+    },
+    {
+      "ticker": "TX28",
+      "tipo": "boncer",
+      "nombre": "Boncer 2028",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "vencimiento": "2028-11-09",
+        "tipo_tasa": "CER"
+      }
+    },
+    {
+      "ticker": "TZX27",
+      "tipo": "boncer",
+      "nombre": "Boncer Zero 2027",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "vencimiento": "2027-06-30",
+        "tipo_tasa": "CER"
+      }
+    },
+    {
+      "ticker": "TZX28",
+      "tipo": "boncer",
+      "nombre": "Boncer Zero 2028",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "vencimiento": "2028-06-30",
+        "tipo_tasa": "CER"
+      }
+    }
   ],
-
   "acciones_panel_lider": [
-    {"ticker": "GGAL", "tipo": "accion_ar", "nombre": "Grupo Financiero Galicia", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"sector": "financiero", "ponderacion_merval": 0.142}},
-    {"ticker": "YPFD", "tipo": "accion_ar", "nombre": "YPF S.A.", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"sector": "energia", "ponderacion_merval": 0.154}},
-    {"ticker": "PAMP", "tipo": "accion_ar", "nombre": "Pampa Energía", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"sector": "energia", "ponderacion_merval": 0.105}},
-    {"ticker": "BMA", "tipo": "accion_ar", "nombre": "Banco Macro", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"sector": "financiero", "ponderacion_merval": 0.089}},
-    {"ticker": "BBAR", "tipo": "accion_ar", "nombre": "BBVA Argentina", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"sector": "financiero", "ponderacion_merval": 0.080}},
-    {"ticker": "TGSU2", "tipo": "accion_ar", "nombre": "Transportadora Gas del Sur", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"sector": "energia"}},
-    {"ticker": "TXAR", "tipo": "accion_ar", "nombre": "Ternium Argentina", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"sector": "materiales"}},
-    {"ticker": "ALUA", "tipo": "accion_ar", "nombre": "Aluar", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"sector": "materiales"}},
-    {"ticker": "LOMA", "tipo": "accion_ar", "nombre": "Loma Negra", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"sector": "materiales"}},
-    {"ticker": "TRAN", "tipo": "accion_ar", "nombre": "Transener", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"sector": "energia"}},
-    {"ticker": "EDN", "tipo": "accion_ar", "nombre": "Edenor", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"sector": "energia"}},
-    {"ticker": "SUPV", "tipo": "accion_ar", "nombre": "Grupo Supervielle", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"sector": "financiero"}},
-    {"ticker": "COME", "tipo": "accion_ar", "nombre": "Sociedad Comercial del Plata", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"sector": "holding"}},
-    {"ticker": "CEPU", "tipo": "accion_ar", "nombre": "Central Puerto", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"sector": "energia"}},
-    {"ticker": "CRES", "tipo": "accion_ar", "nombre": "Cresud", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"sector": "agropecuario"}},
-    {"ticker": "VALO", "tipo": "accion_ar", "nombre": "Banco de Valores", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"sector": "financiero", "ponderacion_merval": 0.027}},
-    {"ticker": "METR", "tipo": "accion_ar", "nombre": "Metrogas", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"sector": "energia"}},
-    {"ticker": "MIRG", "tipo": "accion_ar", "nombre": "Mirgor", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"sector": "industria"}},
-    {"ticker": "TGNO4", "tipo": "accion_ar", "nombre": "Transportadora Gas del Norte", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"sector": "energia"}},
-    {"ticker": "HARG", "tipo": "accion_ar", "nombre": "Holcim Argentina", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"sector": "materiales"}},
-    {"ticker": "ECOG", "tipo": "accion_ar", "nombre": "Ecogas Inversiones", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"sector": "energia", "ingreso_merval": "2026-03-23"}}
+    {
+      "ticker": "GGAL",
+      "tipo": "accion_ar",
+      "nombre": "Grupo Financiero Galicia",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "sector": "financiero",
+        "ponderacion_merval": 0.142
+      }
+    },
+    {
+      "ticker": "YPFD",
+      "tipo": "accion_ar",
+      "nombre": "YPF S.A.",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "sector": "energia",
+        "ponderacion_merval": 0.154
+      }
+    },
+    {
+      "ticker": "PAMP",
+      "tipo": "accion_ar",
+      "nombre": "Pampa Energía",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "sector": "energia",
+        "ponderacion_merval": 0.105
+      }
+    },
+    {
+      "ticker": "BMA",
+      "tipo": "accion_ar",
+      "nombre": "Banco Macro",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "sector": "financiero",
+        "ponderacion_merval": 0.089
+      }
+    },
+    {
+      "ticker": "BBAR",
+      "tipo": "accion_ar",
+      "nombre": "BBVA Argentina",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "sector": "financiero",
+        "ponderacion_merval": 0.08
+      }
+    },
+    {
+      "ticker": "TGSU2",
+      "tipo": "accion_ar",
+      "nombre": "Transportadora Gas del Sur",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "sector": "energia"
+      }
+    },
+    {
+      "ticker": "TXAR",
+      "tipo": "accion_ar",
+      "nombre": "Ternium Argentina",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "sector": "materiales"
+      }
+    },
+    {
+      "ticker": "ALUA",
+      "tipo": "accion_ar",
+      "nombre": "Aluar",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "sector": "materiales"
+      }
+    },
+    {
+      "ticker": "LOMA",
+      "tipo": "accion_ar",
+      "nombre": "Loma Negra",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "sector": "materiales"
+      }
+    },
+    {
+      "ticker": "TRAN",
+      "tipo": "accion_ar",
+      "nombre": "Transener",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "sector": "energia"
+      }
+    },
+    {
+      "ticker": "EDN",
+      "tipo": "accion_ar",
+      "nombre": "Edenor",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "sector": "energia"
+      }
+    },
+    {
+      "ticker": "SUPV",
+      "tipo": "accion_ar",
+      "nombre": "Grupo Supervielle",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "sector": "financiero"
+      }
+    },
+    {
+      "ticker": "COME",
+      "tipo": "accion_ar",
+      "nombre": "Sociedad Comercial del Plata",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "sector": "holding"
+      }
+    },
+    {
+      "ticker": "CEPU",
+      "tipo": "accion_ar",
+      "nombre": "Central Puerto",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "sector": "energia"
+      }
+    },
+    {
+      "ticker": "CRES",
+      "tipo": "accion_ar",
+      "nombre": "Cresud",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "sector": "agropecuario"
+      }
+    },
+    {
+      "ticker": "VALO",
+      "tipo": "accion_ar",
+      "nombre": "Banco de Valores",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "sector": "financiero",
+        "ponderacion_merval": 0.027
+      }
+    },
+    {
+      "ticker": "METR",
+      "tipo": "accion_ar",
+      "nombre": "Metrogas",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "sector": "energia"
+      }
+    },
+    {
+      "ticker": "MIRG",
+      "tipo": "accion_ar",
+      "nombre": "Mirgor",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "sector": "industria"
+      }
+    },
+    {
+      "ticker": "TGNO4",
+      "tipo": "accion_ar",
+      "nombre": "Transportadora Gas del Norte",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "sector": "energia"
+      }
+    },
+    {
+      "ticker": "HARG",
+      "tipo": "accion_ar",
+      "nombre": "Holcim Argentina",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "sector": "materiales"
+      }
+    },
+    {
+      "ticker": "ECOG",
+      "tipo": "accion_ar",
+      "nombre": "Ecogas Inversiones",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "sector": "energia",
+        "ingreso_merval": "2026-03-23"
+      }
+    }
   ],
-
   "cedears": [
-    {"ticker": "AAPL", "tipo": "cedear", "nombre": "Apple Inc.", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"subyacente": "AAPL", "mercado_subyacente": "NASDAQ"}},
-    {"ticker": "MSFT", "tipo": "cedear", "nombre": "Microsoft Corp.", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"subyacente": "MSFT", "mercado_subyacente": "NASDAQ"}},
-    {"ticker": "GOOGL", "tipo": "cedear", "nombre": "Alphabet Inc. Class A", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"subyacente": "GOOGL", "mercado_subyacente": "NASDAQ"}},
-    {"ticker": "AMZN", "tipo": "cedear", "nombre": "Amazon.com Inc.", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"subyacente": "AMZN", "mercado_subyacente": "NASDAQ"}},
-    {"ticker": "NVDA", "tipo": "cedear", "nombre": "NVIDIA Corp.", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"subyacente": "NVDA", "mercado_subyacente": "NASDAQ"}},
-    {"ticker": "META", "tipo": "cedear", "nombre": "Meta Platforms Inc.", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"subyacente": "META", "mercado_subyacente": "NASDAQ"}},
-    {"ticker": "TSLA", "tipo": "cedear", "nombre": "Tesla Inc.", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"subyacente": "TSLA", "mercado_subyacente": "NASDAQ"}},
-    {"ticker": "KO", "tipo": "cedear", "nombre": "Coca-Cola Company", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"subyacente": "KO", "mercado_subyacente": "NYSE"}},
-    {"ticker": "JPM", "tipo": "cedear", "nombre": "JPMorgan Chase & Co.", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"subyacente": "JPM", "mercado_subyacente": "NYSE"}},
-    {"ticker": "BAC", "tipo": "cedear", "nombre": "Bank of America Corp.", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"subyacente": "BAC", "mercado_subyacente": "NYSE"}},
-    {"ticker": "WMT", "tipo": "cedear", "nombre": "Walmart Inc.", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"subyacente": "WMT", "mercado_subyacente": "NYSE"}},
-    {"ticker": "V", "tipo": "cedear", "nombre": "Visa Inc.", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"subyacente": "V", "mercado_subyacente": "NYSE"}},
-    {"ticker": "MA", "tipo": "cedear", "nombre": "Mastercard Inc.", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"subyacente": "MA", "mercado_subyacente": "NYSE"}},
-    {"ticker": "INTC", "tipo": "cedear", "nombre": "Intel Corp.", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"subyacente": "INTC", "mercado_subyacente": "NASDAQ"}},
-    {"ticker": "DIS", "tipo": "cedear", "nombre": "Walt Disney Company", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"subyacente": "DIS", "mercado_subyacente": "NYSE"}},
-    {"ticker": "NFLX", "tipo": "cedear", "nombre": "Netflix Inc.", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"subyacente": "NFLX", "mercado_subyacente": "NASDAQ"}},
-    {"ticker": "BABA", "tipo": "cedear", "nombre": "Alibaba Group Holding", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"subyacente": "BABA", "mercado_subyacente": "NYSE"}},
-    {"ticker": "SPY", "tipo": "cedear", "nombre": "SPDR S&P 500 ETF", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"subyacente": "SPY", "mercado_subyacente": "NYSE", "es_etf": true}},
-    {"ticker": "QQQ", "tipo": "cedear", "nombre": "Invesco QQQ Trust (Nasdaq 100)", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"subyacente": "QQQ", "mercado_subyacente": "NASDAQ", "es_etf": true}},
-    {"ticker": "VIST", "tipo": "cedear", "nombre": "Vista Energy", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"subyacente": "VIST", "mercado_subyacente": "NYSE", "sector": "energia_vaca_muerta"}},
-    {"ticker": "MELI", "tipo": "cedear", "nombre": "MercadoLibre Inc.", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"subyacente": "MELI", "mercado_subyacente": "NASDAQ"}},
-    {"ticker": "SMH", "tipo": "cedear", "nombre": "VanEck Semiconductor ETF", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"subyacente": "SMH", "mercado_subyacente": "NASDAQ", "es_etf": true, "sector": "semiconductores"}},
-    {"ticker": "TSM", "tipo": "cedear", "nombre": "Taiwan Semiconductor Manufacturing", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"subyacente": "TSM", "mercado_subyacente": "NYSE", "sector": "semiconductores"}},
-    {"ticker": "MU", "tipo": "cedear", "nombre": "Micron Technology", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"subyacente": "MU", "mercado_subyacente": "NASDAQ", "sector": "semiconductores"}},
-    {"ticker": "MSTR", "tipo": "cedear", "nombre": "MicroStrategy Inc.", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"subyacente": "MSTR", "mercado_subyacente": "NASDAQ", "exposicion_cripto": true}},
-    {"ticker": "COIN", "tipo": "cedear", "nombre": "Coinbase Global", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"subyacente": "COIN", "mercado_subyacente": "NASDAQ", "exposicion_cripto": true}},
-    {"ticker": "IBIT", "tipo": "cedear", "nombre": "iShares Bitcoin Trust", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"subyacente": "IBIT", "mercado_subyacente": "NASDAQ", "es_etf": true, "exposicion_cripto": true}},
-    {"ticker": "XLE", "tipo": "cedear", "nombre": "Energy Select Sector SPDR", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"subyacente": "XLE", "mercado_subyacente": "NYSE", "es_etf": true, "sector": "energia_us"}},
-    {"ticker": "VALE", "tipo": "cedear", "nombre": "Vale S.A.", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"subyacente": "VALE", "mercado_subyacente": "NYSE", "sector": "mineria"}},
-    {"ticker": "BRKB", "tipo": "cedear", "nombre": "Berkshire Hathaway Class B", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"subyacente": "BRK.B", "mercado_subyacente": "NYSE"}},
-    {"ticker": "XLF", "tipo": "cedear", "nombre": "Financial Select Sector SPDR", "mercado": "BYMA", "moneda": "ARS", "fuente": "rava", "activo": true, "metadata": {"subyacente": "XLF", "mercado_subyacente": "NYSE", "es_etf": true, "sector": "financiero_us"}}
+    {
+      "ticker": "AAPL",
+      "tipo": "cedear",
+      "nombre": "Apple Inc.",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "subyacente": "AAPL",
+        "mercado_subyacente": "NASDAQ"
+      }
+    },
+    {
+      "ticker": "MSFT",
+      "tipo": "cedear",
+      "nombre": "Microsoft Corp.",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "subyacente": "MSFT",
+        "mercado_subyacente": "NASDAQ"
+      }
+    },
+    {
+      "ticker": "GOOGL",
+      "tipo": "cedear",
+      "nombre": "Alphabet Inc. Class A",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "subyacente": "GOOGL",
+        "mercado_subyacente": "NASDAQ"
+      }
+    },
+    {
+      "ticker": "AMZN",
+      "tipo": "cedear",
+      "nombre": "Amazon.com Inc.",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "subyacente": "AMZN",
+        "mercado_subyacente": "NASDAQ"
+      }
+    },
+    {
+      "ticker": "NVDA",
+      "tipo": "cedear",
+      "nombre": "NVIDIA Corp.",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "subyacente": "NVDA",
+        "mercado_subyacente": "NASDAQ"
+      }
+    },
+    {
+      "ticker": "META",
+      "tipo": "cedear",
+      "nombre": "Meta Platforms Inc.",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "subyacente": "META",
+        "mercado_subyacente": "NASDAQ"
+      }
+    },
+    {
+      "ticker": "TSLA",
+      "tipo": "cedear",
+      "nombre": "Tesla Inc.",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "subyacente": "TSLA",
+        "mercado_subyacente": "NASDAQ"
+      }
+    },
+    {
+      "ticker": "KO",
+      "tipo": "cedear",
+      "nombre": "Coca-Cola Company",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "subyacente": "KO",
+        "mercado_subyacente": "NYSE"
+      }
+    },
+    {
+      "ticker": "JPM",
+      "tipo": "cedear",
+      "nombre": "JPMorgan Chase & Co.",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "subyacente": "JPM",
+        "mercado_subyacente": "NYSE"
+      }
+    },
+    {
+      "ticker": "BA.C",
+      "tipo": "cedear",
+      "nombre": "Bank of America Corp.",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "subyacente": "BAC",
+        "mercado_subyacente": "NYSE",
+        "nota_ticker": "Base BYMA es 'BA.C'; 'BAC' sin punto es Boeing-CCL en Primary"
+      }
+    },
+    {
+      "ticker": "WMT",
+      "tipo": "cedear",
+      "nombre": "Walmart Inc.",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "subyacente": "WMT",
+        "mercado_subyacente": "NYSE"
+      }
+    },
+    {
+      "ticker": "V",
+      "tipo": "cedear",
+      "nombre": "Visa Inc.",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "subyacente": "V",
+        "mercado_subyacente": "NYSE"
+      }
+    },
+    {
+      "ticker": "MA",
+      "tipo": "cedear",
+      "nombre": "Mastercard Inc.",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "subyacente": "MA",
+        "mercado_subyacente": "NYSE"
+      }
+    },
+    {
+      "ticker": "INTC",
+      "tipo": "cedear",
+      "nombre": "Intel Corp.",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "subyacente": "INTC",
+        "mercado_subyacente": "NASDAQ"
+      }
+    },
+    {
+      "ticker": "DISN",
+      "tipo": "cedear",
+      "nombre": "Walt Disney Company",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "subyacente": "DIS",
+        "mercado_subyacente": "NYSE",
+        "nota_ticker": "Base BYMA es 'DISN'; 'DIS' no existe en Primary"
+      }
+    },
+    {
+      "ticker": "NFLX",
+      "tipo": "cedear",
+      "nombre": "Netflix Inc.",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "subyacente": "NFLX",
+        "mercado_subyacente": "NASDAQ"
+      }
+    },
+    {
+      "ticker": "BABA",
+      "tipo": "cedear",
+      "nombre": "Alibaba Group Holding",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "subyacente": "BABA",
+        "mercado_subyacente": "NYSE"
+      }
+    },
+    {
+      "ticker": "SPY",
+      "tipo": "cedear",
+      "nombre": "SPDR S&P 500 ETF",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "subyacente": "SPY",
+        "mercado_subyacente": "NYSE",
+        "es_etf": true
+      }
+    },
+    {
+      "ticker": "QQQ",
+      "tipo": "cedear",
+      "nombre": "Invesco QQQ Trust (Nasdaq 100)",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "subyacente": "QQQ",
+        "mercado_subyacente": "NASDAQ",
+        "es_etf": true
+      }
+    },
+    {
+      "ticker": "VIST",
+      "tipo": "cedear",
+      "nombre": "Vista Energy",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "subyacente": "VIST",
+        "mercado_subyacente": "NYSE",
+        "sector": "energia_vaca_muerta"
+      }
+    },
+    {
+      "ticker": "MELI",
+      "tipo": "cedear",
+      "nombre": "MercadoLibre Inc.",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "subyacente": "MELI",
+        "mercado_subyacente": "NASDAQ"
+      }
+    },
+    {
+      "ticker": "SMH",
+      "tipo": "cedear",
+      "nombre": "VanEck Semiconductor ETF",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "subyacente": "SMH",
+        "mercado_subyacente": "NASDAQ",
+        "es_etf": true,
+        "sector": "semiconductores"
+      }
+    },
+    {
+      "ticker": "TSM",
+      "tipo": "cedear",
+      "nombre": "Taiwan Semiconductor Manufacturing",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "subyacente": "TSM",
+        "mercado_subyacente": "NYSE",
+        "sector": "semiconductores"
+      }
+    },
+    {
+      "ticker": "MU",
+      "tipo": "cedear",
+      "nombre": "Micron Technology",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "subyacente": "MU",
+        "mercado_subyacente": "NASDAQ",
+        "sector": "semiconductores"
+      }
+    },
+    {
+      "ticker": "MSTR",
+      "tipo": "cedear",
+      "nombre": "MicroStrategy Inc.",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "subyacente": "MSTR",
+        "mercado_subyacente": "NASDAQ",
+        "exposicion_cripto": true
+      }
+    },
+    {
+      "ticker": "COIN",
+      "tipo": "cedear",
+      "nombre": "Coinbase Global",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "subyacente": "COIN",
+        "mercado_subyacente": "NASDAQ",
+        "exposicion_cripto": true
+      }
+    },
+    {
+      "ticker": "IBIT",
+      "tipo": "cedear",
+      "nombre": "iShares Bitcoin Trust",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "subyacente": "IBIT",
+        "mercado_subyacente": "NASDAQ",
+        "es_etf": true,
+        "exposicion_cripto": true
+      }
+    },
+    {
+      "ticker": "XLE",
+      "tipo": "cedear",
+      "nombre": "Energy Select Sector SPDR",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "subyacente": "XLE",
+        "mercado_subyacente": "NYSE",
+        "es_etf": true,
+        "sector": "energia_us"
+      }
+    },
+    {
+      "ticker": "VALE",
+      "tipo": "cedear",
+      "nombre": "Vale S.A.",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "subyacente": "VALE",
+        "mercado_subyacente": "NYSE",
+        "sector": "mineria"
+      }
+    },
+    {
+      "ticker": "BRKB",
+      "tipo": "cedear",
+      "nombre": "Berkshire Hathaway Class B",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "subyacente": "BRK.B",
+        "mercado_subyacente": "NYSE"
+      }
+    },
+    {
+      "ticker": "XLF",
+      "tipo": "cedear",
+      "nombre": "Financial Select Sector SPDR",
+      "mercado": "BYMA",
+      "moneda": "ARS",
+      "fuente": "primary",
+      "activo": true,
+      "metadata": {
+        "subyacente": "XLF",
+        "mercado_subyacente": "NYSE",
+        "es_etf": true,
+        "sector": "financiero_us"
+      }
+    }
   ],
-
   "subyacentes_us": [
-    {"ticker": "AAPL", "tipo": "subyacente_us", "nombre": "Apple Inc.", "mercado": "NASDAQ", "moneda": "USD", "fuente": "polygon", "activo": true, "metadata": {}},
-    {"ticker": "MSFT", "tipo": "subyacente_us", "nombre": "Microsoft Corp.", "mercado": "NASDAQ", "moneda": "USD", "fuente": "polygon", "activo": true, "metadata": {}},
-    {"ticker": "GOOGL", "tipo": "subyacente_us", "nombre": "Alphabet Inc. Class A", "mercado": "NASDAQ", "moneda": "USD", "fuente": "polygon", "activo": true, "metadata": {}},
-    {"ticker": "AMZN", "tipo": "subyacente_us", "nombre": "Amazon.com Inc.", "mercado": "NASDAQ", "moneda": "USD", "fuente": "polygon", "activo": true, "metadata": {}},
-    {"ticker": "NVDA", "tipo": "subyacente_us", "nombre": "NVIDIA Corp.", "mercado": "NASDAQ", "moneda": "USD", "fuente": "polygon", "activo": true, "metadata": {}},
-    {"ticker": "META", "tipo": "subyacente_us", "nombre": "Meta Platforms Inc.", "mercado": "NASDAQ", "moneda": "USD", "fuente": "polygon", "activo": true, "metadata": {}},
-    {"ticker": "TSLA", "tipo": "subyacente_us", "nombre": "Tesla Inc.", "mercado": "NASDAQ", "moneda": "USD", "fuente": "polygon", "activo": true, "metadata": {}},
-    {"ticker": "KO", "tipo": "subyacente_us", "nombre": "Coca-Cola Company", "mercado": "NYSE", "moneda": "USD", "fuente": "polygon", "activo": true, "metadata": {}},
-    {"ticker": "JPM", "tipo": "subyacente_us", "nombre": "JPMorgan Chase & Co.", "mercado": "NYSE", "moneda": "USD", "fuente": "polygon", "activo": true, "metadata": {}},
-    {"ticker": "BAC", "tipo": "subyacente_us", "nombre": "Bank of America Corp.", "mercado": "NYSE", "moneda": "USD", "fuente": "polygon", "activo": true, "metadata": {}},
-    {"ticker": "WMT", "tipo": "subyacente_us", "nombre": "Walmart Inc.", "mercado": "NYSE", "moneda": "USD", "fuente": "polygon", "activo": true, "metadata": {}},
-    {"ticker": "V", "tipo": "subyacente_us", "nombre": "Visa Inc.", "mercado": "NYSE", "moneda": "USD", "fuente": "polygon", "activo": true, "metadata": {}},
-    {"ticker": "MA", "tipo": "subyacente_us", "nombre": "Mastercard Inc.", "mercado": "NYSE", "moneda": "USD", "fuente": "polygon", "activo": true, "metadata": {}},
-    {"ticker": "INTC", "tipo": "subyacente_us", "nombre": "Intel Corp.", "mercado": "NASDAQ", "moneda": "USD", "fuente": "polygon", "activo": true, "metadata": {}},
-    {"ticker": "DIS", "tipo": "subyacente_us", "nombre": "Walt Disney Company", "mercado": "NYSE", "moneda": "USD", "fuente": "polygon", "activo": true, "metadata": {}},
-    {"ticker": "NFLX", "tipo": "subyacente_us", "nombre": "Netflix Inc.", "mercado": "NASDAQ", "moneda": "USD", "fuente": "polygon", "activo": true, "metadata": {}},
-    {"ticker": "BABA", "tipo": "subyacente_us", "nombre": "Alibaba Group Holding", "mercado": "NYSE", "moneda": "USD", "fuente": "polygon", "activo": true, "metadata": {}},
-    {"ticker": "SPY", "tipo": "subyacente_us", "nombre": "SPDR S&P 500 ETF", "mercado": "NYSE", "moneda": "USD", "fuente": "polygon", "activo": true, "metadata": {"es_etf": true}},
-    {"ticker": "QQQ", "tipo": "subyacente_us", "nombre": "Invesco QQQ Trust", "mercado": "NASDAQ", "moneda": "USD", "fuente": "polygon", "activo": true, "metadata": {"es_etf": true}},
-    {"ticker": "VIST", "tipo": "subyacente_us", "nombre": "Vista Energy", "mercado": "NYSE", "moneda": "USD", "fuente": "polygon", "activo": true, "metadata": {}},
-    {"ticker": "MELI", "tipo": "subyacente_us", "nombre": "MercadoLibre Inc.", "mercado": "NASDAQ", "moneda": "USD", "fuente": "polygon", "activo": true, "metadata": {}},
-    {"ticker": "SMH", "tipo": "subyacente_us", "nombre": "VanEck Semiconductor ETF", "mercado": "NASDAQ", "moneda": "USD", "fuente": "polygon", "activo": true, "metadata": {"es_etf": true}},
-    {"ticker": "TSM", "tipo": "subyacente_us", "nombre": "Taiwan Semiconductor", "mercado": "NYSE", "moneda": "USD", "fuente": "polygon", "activo": true, "metadata": {}},
-    {"ticker": "MU", "tipo": "subyacente_us", "nombre": "Micron Technology", "mercado": "NASDAQ", "moneda": "USD", "fuente": "polygon", "activo": true, "metadata": {}},
-    {"ticker": "MSTR", "tipo": "subyacente_us", "nombre": "MicroStrategy Inc.", "mercado": "NASDAQ", "moneda": "USD", "fuente": "polygon", "activo": true, "metadata": {}},
-    {"ticker": "COIN", "tipo": "subyacente_us", "nombre": "Coinbase Global", "mercado": "NASDAQ", "moneda": "USD", "fuente": "polygon", "activo": true, "metadata": {}},
-    {"ticker": "IBIT", "tipo": "subyacente_us", "nombre": "iShares Bitcoin Trust", "mercado": "NASDAQ", "moneda": "USD", "fuente": "polygon", "activo": true, "metadata": {"es_etf": true}},
-    {"ticker": "XLE", "tipo": "subyacente_us", "nombre": "Energy Select Sector SPDR", "mercado": "NYSE", "moneda": "USD", "fuente": "polygon", "activo": true, "metadata": {"es_etf": true}},
-    {"ticker": "VALE", "tipo": "subyacente_us", "nombre": "Vale S.A.", "mercado": "NYSE", "moneda": "USD", "fuente": "polygon", "activo": true, "metadata": {}},
-    {"ticker": "BRK.B", "tipo": "subyacente_us", "nombre": "Berkshire Hathaway Class B", "mercado": "NYSE", "moneda": "USD", "fuente": "polygon", "activo": true, "metadata": {}},
-    {"ticker": "XLF", "tipo": "subyacente_us", "nombre": "Financial Select Sector SPDR", "mercado": "NYSE", "moneda": "USD", "fuente": "polygon", "activo": true, "metadata": {"es_etf": true}}
+    {
+      "ticker": "AAPL",
+      "tipo": "subyacente_us",
+      "nombre": "Apple Inc.",
+      "mercado": "NASDAQ",
+      "moneda": "USD",
+      "fuente": "polygon",
+      "activo": true,
+      "metadata": {}
+    },
+    {
+      "ticker": "MSFT",
+      "tipo": "subyacente_us",
+      "nombre": "Microsoft Corp.",
+      "mercado": "NASDAQ",
+      "moneda": "USD",
+      "fuente": "polygon",
+      "activo": true,
+      "metadata": {}
+    },
+    {
+      "ticker": "GOOGL",
+      "tipo": "subyacente_us",
+      "nombre": "Alphabet Inc. Class A",
+      "mercado": "NASDAQ",
+      "moneda": "USD",
+      "fuente": "polygon",
+      "activo": true,
+      "metadata": {}
+    },
+    {
+      "ticker": "AMZN",
+      "tipo": "subyacente_us",
+      "nombre": "Amazon.com Inc.",
+      "mercado": "NASDAQ",
+      "moneda": "USD",
+      "fuente": "polygon",
+      "activo": true,
+      "metadata": {}
+    },
+    {
+      "ticker": "NVDA",
+      "tipo": "subyacente_us",
+      "nombre": "NVIDIA Corp.",
+      "mercado": "NASDAQ",
+      "moneda": "USD",
+      "fuente": "polygon",
+      "activo": true,
+      "metadata": {}
+    },
+    {
+      "ticker": "META",
+      "tipo": "subyacente_us",
+      "nombre": "Meta Platforms Inc.",
+      "mercado": "NASDAQ",
+      "moneda": "USD",
+      "fuente": "polygon",
+      "activo": true,
+      "metadata": {}
+    },
+    {
+      "ticker": "TSLA",
+      "tipo": "subyacente_us",
+      "nombre": "Tesla Inc.",
+      "mercado": "NASDAQ",
+      "moneda": "USD",
+      "fuente": "polygon",
+      "activo": true,
+      "metadata": {}
+    },
+    {
+      "ticker": "KO",
+      "tipo": "subyacente_us",
+      "nombre": "Coca-Cola Company",
+      "mercado": "NYSE",
+      "moneda": "USD",
+      "fuente": "polygon",
+      "activo": true,
+      "metadata": {}
+    },
+    {
+      "ticker": "JPM",
+      "tipo": "subyacente_us",
+      "nombre": "JPMorgan Chase & Co.",
+      "mercado": "NYSE",
+      "moneda": "USD",
+      "fuente": "polygon",
+      "activo": true,
+      "metadata": {}
+    },
+    {
+      "ticker": "BAC",
+      "tipo": "subyacente_us",
+      "nombre": "Bank of America Corp.",
+      "mercado": "NYSE",
+      "moneda": "USD",
+      "fuente": "polygon",
+      "activo": true,
+      "metadata": {}
+    },
+    {
+      "ticker": "WMT",
+      "tipo": "subyacente_us",
+      "nombre": "Walmart Inc.",
+      "mercado": "NYSE",
+      "moneda": "USD",
+      "fuente": "polygon",
+      "activo": true,
+      "metadata": {}
+    },
+    {
+      "ticker": "V",
+      "tipo": "subyacente_us",
+      "nombre": "Visa Inc.",
+      "mercado": "NYSE",
+      "moneda": "USD",
+      "fuente": "polygon",
+      "activo": true,
+      "metadata": {}
+    },
+    {
+      "ticker": "MA",
+      "tipo": "subyacente_us",
+      "nombre": "Mastercard Inc.",
+      "mercado": "NYSE",
+      "moneda": "USD",
+      "fuente": "polygon",
+      "activo": true,
+      "metadata": {}
+    },
+    {
+      "ticker": "INTC",
+      "tipo": "subyacente_us",
+      "nombre": "Intel Corp.",
+      "mercado": "NASDAQ",
+      "moneda": "USD",
+      "fuente": "polygon",
+      "activo": true,
+      "metadata": {}
+    },
+    {
+      "ticker": "DIS",
+      "tipo": "subyacente_us",
+      "nombre": "Walt Disney Company",
+      "mercado": "NYSE",
+      "moneda": "USD",
+      "fuente": "polygon",
+      "activo": true,
+      "metadata": {}
+    },
+    {
+      "ticker": "NFLX",
+      "tipo": "subyacente_us",
+      "nombre": "Netflix Inc.",
+      "mercado": "NASDAQ",
+      "moneda": "USD",
+      "fuente": "polygon",
+      "activo": true,
+      "metadata": {}
+    },
+    {
+      "ticker": "BABA",
+      "tipo": "subyacente_us",
+      "nombre": "Alibaba Group Holding",
+      "mercado": "NYSE",
+      "moneda": "USD",
+      "fuente": "polygon",
+      "activo": true,
+      "metadata": {}
+    },
+    {
+      "ticker": "SPY",
+      "tipo": "subyacente_us",
+      "nombre": "SPDR S&P 500 ETF",
+      "mercado": "NYSE",
+      "moneda": "USD",
+      "fuente": "polygon",
+      "activo": true,
+      "metadata": {
+        "es_etf": true
+      }
+    },
+    {
+      "ticker": "QQQ",
+      "tipo": "subyacente_us",
+      "nombre": "Invesco QQQ Trust",
+      "mercado": "NASDAQ",
+      "moneda": "USD",
+      "fuente": "polygon",
+      "activo": true,
+      "metadata": {
+        "es_etf": true
+      }
+    },
+    {
+      "ticker": "VIST",
+      "tipo": "subyacente_us",
+      "nombre": "Vista Energy",
+      "mercado": "NYSE",
+      "moneda": "USD",
+      "fuente": "polygon",
+      "activo": true,
+      "metadata": {}
+    },
+    {
+      "ticker": "MELI",
+      "tipo": "subyacente_us",
+      "nombre": "MercadoLibre Inc.",
+      "mercado": "NASDAQ",
+      "moneda": "USD",
+      "fuente": "polygon",
+      "activo": true,
+      "metadata": {}
+    },
+    {
+      "ticker": "SMH",
+      "tipo": "subyacente_us",
+      "nombre": "VanEck Semiconductor ETF",
+      "mercado": "NASDAQ",
+      "moneda": "USD",
+      "fuente": "polygon",
+      "activo": true,
+      "metadata": {
+        "es_etf": true
+      }
+    },
+    {
+      "ticker": "TSM",
+      "tipo": "subyacente_us",
+      "nombre": "Taiwan Semiconductor",
+      "mercado": "NYSE",
+      "moneda": "USD",
+      "fuente": "polygon",
+      "activo": true,
+      "metadata": {}
+    },
+    {
+      "ticker": "MU",
+      "tipo": "subyacente_us",
+      "nombre": "Micron Technology",
+      "mercado": "NASDAQ",
+      "moneda": "USD",
+      "fuente": "polygon",
+      "activo": true,
+      "metadata": {}
+    },
+    {
+      "ticker": "MSTR",
+      "tipo": "subyacente_us",
+      "nombre": "MicroStrategy Inc.",
+      "mercado": "NASDAQ",
+      "moneda": "USD",
+      "fuente": "polygon",
+      "activo": true,
+      "metadata": {}
+    },
+    {
+      "ticker": "COIN",
+      "tipo": "subyacente_us",
+      "nombre": "Coinbase Global",
+      "mercado": "NASDAQ",
+      "moneda": "USD",
+      "fuente": "polygon",
+      "activo": true,
+      "metadata": {}
+    },
+    {
+      "ticker": "IBIT",
+      "tipo": "subyacente_us",
+      "nombre": "iShares Bitcoin Trust",
+      "mercado": "NASDAQ",
+      "moneda": "USD",
+      "fuente": "polygon",
+      "activo": true,
+      "metadata": {
+        "es_etf": true
+      }
+    },
+    {
+      "ticker": "XLE",
+      "tipo": "subyacente_us",
+      "nombre": "Energy Select Sector SPDR",
+      "mercado": "NYSE",
+      "moneda": "USD",
+      "fuente": "polygon",
+      "activo": true,
+      "metadata": {
+        "es_etf": true
+      }
+    },
+    {
+      "ticker": "VALE",
+      "tipo": "subyacente_us",
+      "nombre": "Vale S.A.",
+      "mercado": "NYSE",
+      "moneda": "USD",
+      "fuente": "polygon",
+      "activo": true,
+      "metadata": {}
+    },
+    {
+      "ticker": "BRK.B",
+      "tipo": "subyacente_us",
+      "nombre": "Berkshire Hathaway Class B",
+      "mercado": "NYSE",
+      "moneda": "USD",
+      "fuente": "polygon",
+      "activo": true,
+      "metadata": {}
+    },
+    {
+      "ticker": "XLF",
+      "tipo": "subyacente_us",
+      "nombre": "Financial Select Sector SPDR",
+      "mercado": "NYSE",
+      "moneda": "USD",
+      "fuente": "polygon",
+      "activo": true,
+      "metadata": {
+        "es_etf": true
+      }
+    }
   ],
-
   "calculados": [
-    {"ticker": "DOLAR_MEP", "tipo": "calculado", "nombre": "Dólar MEP (calculado AL30/AL30D)", "mercado": "DERIVADO", "moneda": "ARS", "fuente": "calculado", "activo": true, "metadata": {"formula": "precio_AL30_ARS / precio_AL30D_USD", "depende_de": ["AL30", "AL30D"]}},
-    {"ticker": "DOLAR_CCL", "tipo": "calculado", "nombre": "Dólar CCL (calculado GD30/GD30C)", "mercado": "DERIVADO", "moneda": "ARS", "fuente": "calculado", "activo": true, "metadata": {"formula": "precio_GD30_ARS / precio_GD30C_USD", "depende_de": ["GD30", "GD30C"]}},
-    {"ticker": "BRECHA_MEP", "tipo": "calculado", "nombre": "Brecha cambiaria MEP vs oficial", "mercado": "DERIVADO", "moneda": "PORCENTAJE", "fuente": "calculado", "activo": true, "metadata": {"formula": "(DOLAR_MEP - tc_oficial) / tc_oficial * 100", "depende_de": ["DOLAR_MEP", "tc_oficial_bcra"]}},
-    {"ticker": "YTM_BONOS", "tipo": "calculado_por_instrumento", "nombre": "Yield to Maturity por bono", "mercado": "DERIVADO", "moneda": "PORCENTAJE", "fuente": "calculado", "activo": true, "metadata": {"aplica_a": ["AL29", "AL30", "AL35", "AL41", "AE38", "GD30", "GD35", "GD38", "GD41", "AO27", "AO28"]}},
-    {"ticker": "PARIDAD_BONOS", "tipo": "calculado_por_instrumento", "nombre": "Paridad de bonos (precio/VN)", "mercado": "DERIVADO", "moneda": "PORCENTAJE", "fuente": "calculado", "activo": true, "metadata": {"aplica_a": ["AL29", "AL30", "AL35", "AL41", "AE38", "GD30", "GD35", "GD38", "GD41", "AO27", "AO28"]}}
+    {
+      "ticker": "DOLAR_MEP",
+      "tipo": "calculado",
+      "nombre": "Dólar MEP (calculado AL30/AL30D)",
+      "mercado": "DERIVADO",
+      "moneda": "ARS",
+      "fuente": "calculado",
+      "activo": true,
+      "metadata": {
+        "formula": "precio_AL30_ARS / precio_AL30D_USD",
+        "depende_de": [
+          "AL30",
+          "AL30D"
+        ]
+      }
+    },
+    {
+      "ticker": "DOLAR_CCL",
+      "tipo": "calculado",
+      "nombre": "Dólar CCL (calculado GD30/GD30C)",
+      "mercado": "DERIVADO",
+      "moneda": "ARS",
+      "fuente": "calculado",
+      "activo": true,
+      "metadata": {
+        "formula": "precio_GD30_ARS / precio_GD30C_USD",
+        "depende_de": [
+          "GD30",
+          "GD30C"
+        ]
+      }
+    },
+    {
+      "ticker": "BRECHA_MEP",
+      "tipo": "calculado",
+      "nombre": "Brecha cambiaria MEP vs oficial",
+      "mercado": "DERIVADO",
+      "moneda": "PORCENTAJE",
+      "fuente": "calculado",
+      "activo": true,
+      "metadata": {
+        "formula": "(DOLAR_MEP - tc_oficial) / tc_oficial * 100",
+        "depende_de": [
+          "DOLAR_MEP",
+          "tc_oficial_bcra"
+        ]
+      }
+    },
+    {
+      "ticker": "YTM_BONOS",
+      "tipo": "calculado_por_instrumento",
+      "nombre": "Yield to Maturity por bono",
+      "mercado": "DERIVADO",
+      "moneda": "PORCENTAJE",
+      "fuente": "calculado",
+      "activo": true,
+      "metadata": {
+        "aplica_a": [
+          "AL29",
+          "AL30",
+          "AL35",
+          "AL41",
+          "AE38",
+          "GD30",
+          "GD35",
+          "GD38",
+          "GD41",
+          "AO27",
+          "AO28"
+        ]
+      }
+    },
+    {
+      "ticker": "PARIDAD_BONOS",
+      "tipo": "calculado_por_instrumento",
+      "nombre": "Paridad de bonos (precio/VN)",
+      "mercado": "DERIVADO",
+      "moneda": "PORCENTAJE",
+      "fuente": "calculado",
+      "activo": true,
+      "metadata": {
+        "aplica_a": [
+          "AL29",
+          "AL30",
+          "AL35",
+          "AL41",
+          "AE38",
+          "GD30",
+          "GD35",
+          "GD38",
+          "GD41",
+          "AO27",
+          "AO28"
+        ]
+      }
+    }
   ],
-
   "macro": [
-    {"ticker": "BCRA_RESERVAS_BRUTAS", "tipo": "macro", "nombre": "Reservas brutas BCRA", "fuente": "bcra", "activo": true, "metadata": {"endpoint": "reservas/brutas", "frecuencia": "diaria", "unidad": "millones_USD"}},
-    {"ticker": "BCRA_RESERVAS_NETAS", "tipo": "macro", "nombre": "Reservas netas BCRA", "fuente": "bcra", "activo": true, "metadata": {"endpoint": "reservas/netas", "frecuencia": "diaria", "unidad": "millones_USD"}},
-    {"ticker": "BCRA_TC_OFICIAL", "tipo": "macro", "nombre": "Tipo de cambio oficial BCRA", "fuente": "bcra", "activo": true, "metadata": {"endpoint": "tipo_cambio/oficial", "frecuencia": "diaria", "unidad": "ARS_por_USD"}},
-    {"ticker": "BCRA_TASA_POLITICA", "tipo": "macro", "nombre": "Tasa de política monetaria BCRA", "fuente": "bcra", "activo": true, "metadata": {"endpoint": "tasas/politica", "frecuencia": "diaria", "unidad": "tasa_efectiva_anual"}},
-    {"ticker": "INDEC_IPC_GENERAL", "tipo": "macro", "nombre": "IPC general INDEC", "fuente": "indec", "activo": true, "metadata": {"frecuencia": "mensual", "unidad": "variacion_porcentual"}},
-    {"ticker": "INDEC_IPC_NUCLEO", "tipo": "macro", "nombre": "IPC núcleo INDEC", "fuente": "indec", "activo": true, "metadata": {"frecuencia": "mensual", "unidad": "variacion_porcentual"}},
-    {"ticker": "INDEC_IPC_MAYORISTA", "tipo": "macro", "nombre": "IPC mayorista INDEC", "fuente": "indec", "activo": true, "metadata": {"frecuencia": "mensual", "unidad": "variacion_porcentual"}},
-    {"ticker": "INDEC_EMAE", "tipo": "macro", "nombre": "Estimador Mensual de Actividad Económica", "fuente": "indec", "activo": true, "metadata": {"frecuencia": "mensual", "unidad": "indice"}}
+    {
+      "ticker": "BCRA_RESERVAS_BRUTAS",
+      "tipo": "macro",
+      "nombre": "Reservas brutas BCRA",
+      "fuente": "bcra",
+      "activo": true,
+      "metadata": {
+        "endpoint": "reservas/brutas",
+        "frecuencia": "diaria",
+        "unidad": "millones_USD"
+      }
+    },
+    {
+      "ticker": "BCRA_RESERVAS_NETAS",
+      "tipo": "macro",
+      "nombre": "Reservas netas BCRA",
+      "fuente": "bcra",
+      "activo": true,
+      "metadata": {
+        "endpoint": "reservas/netas",
+        "frecuencia": "diaria",
+        "unidad": "millones_USD"
+      }
+    },
+    {
+      "ticker": "BCRA_TC_OFICIAL",
+      "tipo": "macro",
+      "nombre": "Tipo de cambio oficial BCRA",
+      "fuente": "bcra",
+      "activo": true,
+      "metadata": {
+        "endpoint": "tipo_cambio/oficial",
+        "frecuencia": "diaria",
+        "unidad": "ARS_por_USD"
+      }
+    },
+    {
+      "ticker": "BCRA_TASA_POLITICA",
+      "tipo": "macro",
+      "nombre": "Tasa de política monetaria BCRA",
+      "fuente": "bcra",
+      "activo": true,
+      "metadata": {
+        "endpoint": "tasas/politica",
+        "frecuencia": "diaria",
+        "unidad": "tasa_efectiva_anual"
+      }
+    },
+    {
+      "ticker": "INDEC_IPC_GENERAL",
+      "tipo": "macro",
+      "nombre": "IPC general INDEC",
+      "fuente": "indec",
+      "activo": true,
+      "metadata": {
+        "frecuencia": "mensual",
+        "unidad": "variacion_porcentual"
+      }
+    },
+    {
+      "ticker": "INDEC_IPC_NUCLEO",
+      "tipo": "macro",
+      "nombre": "IPC núcleo INDEC",
+      "fuente": "indec",
+      "activo": true,
+      "metadata": {
+        "frecuencia": "mensual",
+        "unidad": "variacion_porcentual"
+      }
+    },
+    {
+      "ticker": "INDEC_IPC_MAYORISTA",
+      "tipo": "macro",
+      "nombre": "IPC mayorista INDEC",
+      "fuente": "indec",
+      "activo": true,
+      "metadata": {
+        "frecuencia": "mensual",
+        "unidad": "variacion_porcentual"
+      }
+    },
+    {
+      "ticker": "INDEC_EMAE",
+      "tipo": "macro",
+      "nombre": "Estimador Mensual de Actividad Económica",
+      "fuente": "indec",
+      "activo": true,
+      "metadata": {
+        "frecuencia": "mensual",
+        "unidad": "indice"
+      }
+    }
   ],
-
   "cauciones": {
     "descripcion": "Tasas de caución colocadora y tomadora en pesos y USD, monitoreadas para cash_management.py. NO se opera carry trade caución-USD por ahora.",
-    "fuente": "rava",
+    "fuente": "primary",
     "activo": true,
-    "plazos_monitoreados": [1, 7, 14, 30],
-    "monedas": ["ARS", "USD"],
+    "plazos_monitoreados": [
+      1,
+      7,
+      14,
+      30
+    ],
+    "monedas": [
+      "ARS",
+      "USD"
+    ],
     "metadata": {
       "notas": "Las cauciones se incorporan al universo como instrumentos consultables. cash_management.py puede colocarlas como parking de pesos cuando se implemente en Fase 2."
     }
