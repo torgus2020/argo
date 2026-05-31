@@ -24,7 +24,7 @@ Uso típico:
 from contextlib import contextmanager
 from pathlib import Path
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 from sqlalchemy.orm import sessionmaker
 
 from src.utils.logger import obtener_logger
@@ -48,6 +48,30 @@ engine = create_engine(
     echo=False,
     connect_args={"check_same_thread": False},
 )
+
+
+@event.listens_for(engine, "connect")
+def _activar_foreign_keys(conexion_dbapi, registro_conexion):
+    """
+    Activa la validación de foreign keys en cada conexión SQLite.
+
+    SQLite NO valida foreign keys por defecto: hay que pedirlo explícitamente
+    con PRAGMA foreign_keys=ON, y se setea POR CONEXIÓN (no es global ni
+    persistente entre conexiones). Este listener corre cada vez que el pool
+    abre una conexión física nueva, garantizando que TODA conexión productiva
+    valide integridad referencial.
+
+    Sin esto, la base aceptaría —por ejemplo— una fila en cotizaciones_1min o
+    en instrumento_broker_mapping apuntando a un instrumento_id inexistente,
+    sin chistar. Es el mismo PRAGMA que tests/conftest.py activa para los
+    tests; acá lo activamos para la base real.
+
+    Específico de SQLite. El proyecto usa SQLite exclusivamente.
+    """
+    cursor = conexion_dbapi.cursor()
+    cursor.execute("PRAGMA foreign_keys=ON")
+    cursor.close()
+
 
 # Factory de sesiones. autoflush=False evita escrituras implícitas que pueden
 # confundir; el commit explícito es siempre preferible.
