@@ -14,9 +14,14 @@ Decisiones de diseño documentadas en docs/db_schema.md.
 Los modelos NO contienen lógica de negocio. Solo definen estructura y relaciones.
 La lógica vive en src/utils/db.py (conexión, sesiones) y módulos específicos
 (collectors, estrategias).
+
+Convención de fechas: TODO datetime persistido en Argo es UTC-aware (con
+tzinfo=timezone.utc explícito). Los timestamps del sistema son UTC; declararlo
+en el tipo evita mezclar naive y aware, que en Python lanza TypeError al
+comparar. Ver helper _ahora_utc abajo.
 """
 
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import (
     Column,
     Integer,
@@ -31,6 +36,18 @@ from sqlalchemy import (
     Index,
 )
 from sqlalchemy.orm import declarative_base, relationship
+
+
+def _ahora_utc() -> datetime:
+    """
+    Devuelve el instante actual como datetime UTC-aware.
+
+    Reemplaza a datetime.utcnow() (deprecado en Python 3.12), que además
+    devolvía un datetime naive. Acá devolvemos aware (tzinfo=UTC explícito):
+    es la convención de fechas de Argo. Un solo lugar donde vive la regla,
+    para que todos los defaults/onupdate de los modelos la compartan.
+    """
+    return datetime.now(timezone.utc)
 
 
 # Base declarativa para todos los modelos. Cualquier clase que herede de Base
@@ -61,9 +78,9 @@ class Instrumento(Base):
     fuente = Column(String(30), nullable=False)
     activo = Column(Boolean, nullable=False, default=True)
     metadata_json = Column(Text, nullable=True)
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    created_at = Column(DateTime, nullable=False, default=_ahora_utc)
     updated_at = Column(
-        DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
+        DateTime, nullable=False, default=_ahora_utc, onupdate=_ahora_utc
     )
 
     # Relaciones inversas (no crean columnas, solo facilitan navegar desde el código)
@@ -137,9 +154,9 @@ class InstrumentoBrokerMapping(Base):
     activo = Column(Boolean, nullable=False, default=True)
     metadata_json = Column(Text, nullable=True)
     fecha_validacion = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    created_at = Column(DateTime, nullable=False, default=_ahora_utc)
     updated_at = Column(
-        DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
+        DateTime, nullable=False, default=_ahora_utc, onupdate=_ahora_utc
     )
 
     instrumento = relationship("Instrumento", back_populates="broker_mappings")
@@ -187,7 +204,7 @@ class Cotizacion1Min(Base):
     volume_dolarizado = Column(Float, nullable=True)
     cantidad_operaciones = Column(Integer, nullable=True)
     fuente = Column(String(30), nullable=False)
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    created_at = Column(DateTime, nullable=False, default=_ahora_utc)
 
     instrumento = relationship("Instrumento", back_populates="cotizaciones_1min")
 
@@ -230,7 +247,7 @@ class CotizacionDiaria(Base):
     volume_dolarizado = Column(Float, nullable=True)
     cantidad_operaciones = Column(Integer, nullable=True)
     fuente = Column(String(30), nullable=False)
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    created_at = Column(DateTime, nullable=False, default=_ahora_utc)
 
     instrumento = relationship("Instrumento", back_populates="cotizaciones_diarias")
 
@@ -267,7 +284,7 @@ class MacroIndicador(Base):
     unidad = Column(String(30), nullable=False)
     fuente = Column(String(30), nullable=False)
     metadata_json = Column(Text, nullable=True)
-    created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
+    created_at = Column(DateTime, nullable=False, default=_ahora_utc)
 
     __table_args__ = (
         UniqueConstraint("indicador", "fecha", name="uq_macro_indicador_fecha"),

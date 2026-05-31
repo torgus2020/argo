@@ -35,7 +35,7 @@ Devuelve código de salida:
 import json
 import sys
 from collections.abc import Callable
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 
 # Agregar la raíz del proyecto al sys.path para poder importar módulos de src/
@@ -116,7 +116,7 @@ def _upsert_instrumento(session, datos_instrumento: dict, categoria: str) -> str
         existente.fuente = fuente
         existente.activo = activo
         existente.metadata_json = metadata_json
-        existente.updated_at = datetime.utcnow()
+        existente.updated_at = datetime.now(timezone.utc)
         return "actualizado"
     else:
         # Insertar nuevo
