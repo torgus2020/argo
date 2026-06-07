@@ -4,6 +4,7 @@ Modelos de SQLAlchemy para la base de datos de Argo.
 Define las tablas principales del sistema:
 - instrumentos: catálogo maestro de instrumentos del universo
 - instrumento_broker_mapping: mapeo de instrumentos a símbolos de cada broker
+- ticks_crudos: ticks crudos de market data en tiempo real (capa de captura)
 - cotizaciones_1min: datos intradía con granularidad de 1 minuto
 - cotizaciones_diarias: datos OHLCV diarios
 - macro_indicadores: indicadores BCRA, INDEC, otras fuentes macro
@@ -174,6 +175,103 @@ class InstrumentoBrokerMapping(Base):
             f"broker='{self.broker}', symbol='{self.symbol_externo}', "
             f"segmento='{self.segmento}', plazo='{self.plazo}', "
             f"moneda='{self.moneda_liquidacion}')>"
+        )
+
+
+class TickCrudo(Base):
+    """
+    Ticks crudos de market data en tiempo real (Opción A: grabar crudo + derivar).
+
+    Es la capa de captura SIN PROCESAR del feed de Primary/BIND vía WebSocket.
+    Una fila por cada mensaje de market data recibido. De esta tabla se derivan
+    después las barras agregadas (cotizaciones_1min) en una capa separada; el
+    crudo se conserva como fuente de verdad y se purga con política de retención
+    (~cada 3 meses) una vez derivado y validado. Cadena del dato:
+        ticks_crudos  →  cotizaciones_1min  →  cotizaciones_diarias
+
+    --- Por qué NO hay constraint UNIQUE (a diferencia de cotizaciones_1min) ---
+    cotizaciones_1min SÍ tiene único sobre (instrumento_id, timestamp): una barra
+    de 1 minuto de un instrumento es única por definición. Acá es al revés, y a
+    propósito. El campo `timestamp` del mensaje de Primary es la hora del PUSH del
+    servidor, no la de cada actualización individual: en una misma ráfaga,
+    instrumentos distintos comparten el mismo timestamp al milisegundo (verificado
+    en la captura del 2026-06-03: seis símbolos distintos, idéntico timestamp). Un
+    único sobre (mapping_id, ts_mensaje) colisionaría. Pero la razón de fondo es
+    más profunda: un constraint único es un DEDUPLICADOR, y deduplicar contradice
+    el principio de grabar crudo —tiraría mensajes legítimos que cayeran en el
+    mismo instante—. Acá se prioriza FIDELIDAD sobre idempotencia: se graba TODO.
+    La defensa contra duplicados por reconexión vive en el collector (no reprocesar
+    una sesión de WebSocket), no en un constraint que sacrifique información
+    irrecuperable. La PK es sintética (id autoincremental), sin clave natural.
+
+    --- Por qué blob (raw_json) + columnas extraídas ---
+    raw_json guarda el mensaje verbatim: es la fuente de verdad y asegura contra
+    campos que todavía no observamos (la captura fue una muestra chica de L1 un día
+    tranquilo; no vimos L2, subastas, ni libros atípicos). Las columnas bid/offer/
+    last son un atajo para consultar y agregar sin parsear JSON en cada lectura.
+    Redundancia deliberada: ~20% más de disco a cambio de no quedar rehenes de lo
+    que no modelamos hoy. Si mañana aparece un campo nuevo, está en el blob.
+
+    --- Los tres tiempos (no confundirlos) ---
+    - ts_mensaje:      del `timestamp` de nivel superior del mensaje (push del
+                       servidor, epoch ms → UTC-aware). Es el eje temporal de la
+                       agregación a 1 minuto.
+    - ts_recepcion:    cuándo lo recibió Argo (_ahora_utc al insertar). Es el único
+                       orden que controlamos nosotros; útil para medir latencia.
+    - ts_ultimo_trade: del `LA.date` (cuándo fue la última operación efectiva).
+                       Nullable: un instrumento con puntas pero sin operar todavía
+                       trae LA=null (visto en TX26C el 2026-06-03).
+
+    --- La punta ---
+    En el mensaje, BI (bid) y OF (offer) vienen como LISTA de niveles. En L1
+    capturamos el primer nivel (mejor punta) en las columnas. Si algún día se
+    captura L2 (profundidad), el libro completo queda igual preservado en raw_json
+    sin tocar el schema.
+
+    --- La relación con el mapeo ---
+    mapping_id apunta a instrumento_broker_mapping.id (la fila ya encadena
+    instrumento + broker + plazo + moneda). El collector resuelve symbol → mapping_id
+    una sola vez al arrancar (cache en memoria, re-resuelto contra la tabla viva),
+    no en cada tick. La relación se declara de UNA sola vía (desde el tick) y SIN
+    cascade de borrado: borrar un mapeo NO debe evaporar millones de ticks crudos
+    —sería la pérdida irreversible que esta tabla existe para evitar—. Los mapeos
+    se retiran con activo=False, nunca se borran (decisión 1.3), y la FK bloquea el
+    borrado de un mapeo con ticks colgando.
+    """
+
+    __tablename__ = "ticks_crudos"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    mapping_id = Column(
+        Integer, ForeignKey("instrumento_broker_mapping.id"), nullable=False
+    )
+    ts_mensaje = Column(DateTime, nullable=False)
+    ts_recepcion = Column(DateTime, nullable=False, default=_ahora_utc)
+    ts_ultimo_trade = Column(DateTime, nullable=True)
+    bid_price = Column(Float, nullable=True)
+    bid_size = Column(Integer, nullable=True)
+    offer_price = Column(Float, nullable=True)
+    offer_size = Column(Integer, nullable=True)
+    last_price = Column(Float, nullable=True)
+    last_size = Column(Integer, nullable=True)
+    raw_json = Column(Text, nullable=False)
+
+    # Relación de una sola vía (sin back_populates, sin cascade). Ver docstring.
+    mapping = relationship("InstrumentoBrokerMapping")
+
+    __table_args__ = (
+        # Índice compuesto que arranca por mapping_id: sirve tanto para "todos los
+        # ticks del instrumento X en tal ventana" (lo que lee la agregación) como
+        # para resolver la FK. No se pone index simple en mapping_id: sería
+        # redundante con este y se pagaría en cada insert.
+        Index("ix_ticks_crudos_mapping_ts", "mapping_id", "ts_mensaje"),
+    )
+
+    def __repr__(self):
+        return (
+            f"<TickCrudo(mapping_id={self.mapping_id}, "
+            f"ts_mensaje={self.ts_mensaje}, bid={self.bid_price}, "
+            f"offer={self.offer_price}, last={self.last_price})>"
         )
 
 

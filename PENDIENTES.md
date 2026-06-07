@@ -221,6 +221,19 @@ dedicada, no un paso dentro de otra.
 
 ---
 
+### Auditoría de Instrucciones del proyecto (prioridad baja): 
+revisar y depurar redundancias y detalle de bajo valor. Candidatos identificados (sesión 2026-06-02): (a) la convención datetime UTC-aware aparece dos veces —sección
+propia + viñeta en Estilo de respuesta—, consolidar en una. (b) La sección
+Convenciones de Primary/Matriz es la que más crece y acumula detalle muy
+técnico (CFICodes, tickers con punto, resolución FK, override de host, tabla
+de mapeo); evaluar mover el detalle fino a PENDIENTES.md o doc del repo y
+dejar solo el principio en Instrucciones. NO urgente: el largo actual es
+manejable y el riesgo de sacar una línea que prevenía un bug supera el costo
+del espacio. Encarar en sesión corta dedicada, con cabeza fresca, cuando no
+haya nada urgente (mismo criterio que la auditoría de arquitectura Fase 1).
+
+---
+
 ### Refactor datetime.utcnow() → datetime.now(timezone.utc)
 
 **Identificado:** Sesión 2026-05-24.
