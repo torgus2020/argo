@@ -17,9 +17,12 @@ La lógica vive en src/utils/db.py (conexión, sesiones) y módulos específicos
 (collectors, estrategias).
 
 Convención de fechas: TODO datetime persistido en Argo es UTC-aware (con
-tzinfo=timezone.utc explícito). Los timestamps del sistema son UTC; declararlo
-en el tipo evita mezclar naive y aware, que en Python lanza TypeError al
-comparar. Ver helper _ahora_utc abajo.
+tzinfo=timezone.utc explícito). Los timestamps del sistema son UTC. Para que
+esa convención se cumpla de verdad en SQLite —que no tiene tipo nativo de
+timestamp con zona y devuelve naive al leer— las columnas de fecha-y-hora NO
+usan DateTime a secas, sino el tipo custom DateTimeUTC definido abajo, que
+fuerza UTC al escribir y adjunta tzinfo=UTC al leer (incluso a filas viejas
+guardadas naive). Ver DateTimeUTC y el helper _ahora_utc.
 """
 
 from datetime import datetime, timezone
@@ -36,6 +39,7 @@ from sqlalchemy import (
     UniqueConstraint,
     Index,
 )
+from sqlalchemy.types import TypeDecorator
 from sqlalchemy.orm import declarative_base, relationship
 
 
@@ -49,6 +53,53 @@ def _ahora_utc() -> datetime:
     para que todos los defaults/onupdate de los modelos la compartan.
     """
     return datetime.now(timezone.utc)
+
+
+class DateTimeUTC(TypeDecorator):
+    """
+    Tipo de columna datetime que garantiza UTC-aware en ambos sentidos.
+
+    Problema que resuelve: SQLite no tiene tipo nativo de timestamp con zona.
+    Guarda el datetime como texto, y al leer SQLAlchemy lo reconstruye NAIVE
+    (sin tzinfo). DateTime(timezone=True) en SQLite NO alcanza: solo preserva
+    el offset si el texto ya lo tuviera, y el texto histórico de Argo se guardó
+    sin offset. Resultado: lecturas naive, que rompen comparaciones contra los
+    datetimes aware que genera el código (TypeError naive vs aware) y violan la
+    convención del proyecto.
+
+    Cómo lo resuelve, en un solo lugar (igual que _ahora_utc centraliza la regla):
+      - Al ESCRIBIR (process_bind_param): si el valor es aware, lo convierte a
+        UTC y lo guarda como naive (formato uniforme con lo ya escrito en disco).
+        Si llegara naive, se asume UTC por convención y se guarda tal cual.
+      - Al LEER (process_result_value): si el texto sale naive (todo lo viejo),
+        le adjunta tzinfo=UTC. Si por algún motivo viniera aware, lo normaliza
+        a UTC. Toda lectura sale UTC-aware.
+
+    Es RETROACTIVO: las filas escritas antes de adoptar este tipo son UTC pero
+    están guardadas naive; al pasar por process_result_value salen aware, sin
+    reescribir un solo byte en disco. El contrato "lo que está en la base es
+    UTC" lo enforcea el software (no SQLite), pero ahora lo cumple de verdad.
+    """
+
+    impl = DateTime
+    cache_ok = True  # el tipo no tiene parámetros mutables: cacheable por SQLAlchemy
+
+    def process_bind_param(self, value, dialect):
+        """Al escribir: normaliza a UTC y guarda naive (formato uniforme)."""
+        if value is None:
+            return None
+        if value.tzinfo is None:
+            # Por convención no debería entrar naive; si pasa, se asume UTC.
+            return value
+        return value.astimezone(timezone.utc).replace(tzinfo=None)
+
+    def process_result_value(self, value, dialect):
+        """Al leer: si sale naive (lo histórico), adjunta UTC; si no, normaliza."""
+        if value is None:
+            return None
+        if value.tzinfo is None:
+            return value.replace(tzinfo=timezone.utc)
+        return value.astimezone(timezone.utc)
 
 
 # Base declarativa para todos los modelos. Cualquier clase que herede de Base
@@ -79,9 +130,9 @@ class Instrumento(Base):
     fuente = Column(String(30), nullable=False)
     activo = Column(Boolean, nullable=False, default=True)
     metadata_json = Column(Text, nullable=True)
-    created_at = Column(DateTime, nullable=False, default=_ahora_utc)
+    created_at = Column(DateTimeUTC, nullable=False, default=_ahora_utc)
     updated_at = Column(
-        DateTime, nullable=False, default=_ahora_utc, onupdate=_ahora_utc
+        DateTimeUTC, nullable=False, default=_ahora_utc, onupdate=_ahora_utc
     )
 
     # Relaciones inversas (no crean columnas, solo facilitan navegar desde el código)
@@ -154,10 +205,10 @@ class InstrumentoBrokerMapping(Base):
     es_default = Column(Boolean, nullable=False, default=False)
     activo = Column(Boolean, nullable=False, default=True)
     metadata_json = Column(Text, nullable=True)
-    fecha_validacion = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, nullable=False, default=_ahora_utc)
+    fecha_validacion = Column(DateTimeUTC, nullable=True)
+    created_at = Column(DateTimeUTC, nullable=False, default=_ahora_utc)
     updated_at = Column(
-        DateTime, nullable=False, default=_ahora_utc, onupdate=_ahora_utc
+        DateTimeUTC, nullable=False, default=_ahora_utc, onupdate=_ahora_utc
     )
 
     instrumento = relationship("Instrumento", back_populates="broker_mappings")
@@ -245,9 +296,9 @@ class TickCrudo(Base):
     mapping_id = Column(
         Integer, ForeignKey("instrumento_broker_mapping.id"), nullable=False
     )
-    ts_mensaje = Column(DateTime, nullable=False)
-    ts_recepcion = Column(DateTime, nullable=False, default=_ahora_utc)
-    ts_ultimo_trade = Column(DateTime, nullable=True)
+    ts_mensaje = Column(DateTimeUTC, nullable=False)
+    ts_recepcion = Column(DateTimeUTC, nullable=False, default=_ahora_utc)
+    ts_ultimo_trade = Column(DateTimeUTC, nullable=True)
     bid_price = Column(Float, nullable=True)
     bid_size = Column(Integer, nullable=True)
     offer_price = Column(Float, nullable=True)
@@ -293,7 +344,7 @@ class Cotizacion1Min(Base):
     instrumento_id = Column(
         Integer, ForeignKey("instrumentos.id"), nullable=False
     )
-    timestamp = Column(DateTime, nullable=False)
+    timestamp = Column(DateTimeUTC, nullable=False)
     open = Column(Float, nullable=False)
     high = Column(Float, nullable=False)
     low = Column(Float, nullable=False)
@@ -302,7 +353,7 @@ class Cotizacion1Min(Base):
     volume_dolarizado = Column(Float, nullable=True)
     cantidad_operaciones = Column(Integer, nullable=True)
     fuente = Column(String(30), nullable=False)
-    created_at = Column(DateTime, nullable=False, default=_ahora_utc)
+    created_at = Column(DateTimeUTC, nullable=False, default=_ahora_utc)
 
     instrumento = relationship("Instrumento", back_populates="cotizaciones_1min")
 
@@ -345,7 +396,7 @@ class CotizacionDiaria(Base):
     volume_dolarizado = Column(Float, nullable=True)
     cantidad_operaciones = Column(Integer, nullable=True)
     fuente = Column(String(30), nullable=False)
-    created_at = Column(DateTime, nullable=False, default=_ahora_utc)
+    created_at = Column(DateTimeUTC, nullable=False, default=_ahora_utc)
 
     instrumento = relationship("Instrumento", back_populates="cotizaciones_diarias")
 
@@ -382,7 +433,7 @@ class MacroIndicador(Base):
     unidad = Column(String(30), nullable=False)
     fuente = Column(String(30), nullable=False)
     metadata_json = Column(Text, nullable=True)
-    created_at = Column(DateTime, nullable=False, default=_ahora_utc)
+    created_at = Column(DateTimeUTC, nullable=False, default=_ahora_utc)
 
     __table_args__ = (
         UniqueConstraint("indicador", "fecha", name="uq_macro_indicador_fecha"),
@@ -413,8 +464,8 @@ class LogCollector(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     collector = Column(String(30), nullable=False, index=True)
-    timestamp_inicio = Column(DateTime, nullable=False)
-    timestamp_fin = Column(DateTime, nullable=True)
+    timestamp_inicio = Column(DateTimeUTC, nullable=False)
+    timestamp_fin = Column(DateTimeUTC, nullable=True)
     instrumentos_procesados = Column(Integer, nullable=False, default=0)
     instrumentos_exitosos = Column(Integer, nullable=False, default=0)
     instrumentos_fallidos = Column(Integer, nullable=False, default=0)
