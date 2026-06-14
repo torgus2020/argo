@@ -65,10 +65,12 @@ El cache symbol -> mapping_id se arma SIEMPRE contra la tabla viva (los 366),
 re-resuelto al arrancar (principio H1.6: no confiar en ids que traiga un JSON).
 """
 
+import json
 import queue
 import threading
 import time
-from datetime import datetime, timezone, time as hora_del_dia, timedelta
+from datetime import datetime, timezone, time as hora_del_dia, timedelta, date
+from pathlib import Path
 
 import pytz
 import pyRofex
@@ -111,6 +113,39 @@ _MUESTRA_V1 = [
     "MERV - XMEV - MELID - CI",   # CEDEAR USD MEP (MercadoLibre)
 ]
 
+# Ruta al archivo de feriados bursátiles (config/feriados_byma.json), relativa a
+# la raíz del proyecto (src/collectors/este_archivo -> parents[2] = raíz).
+_RUTA_FERIADOS = Path(__file__).resolve().parents[2] / "config" / "feriados_byma.json"
+
+
+def _cargar_feriados() -> set:
+    """
+    Lee config/feriados_byma.json y devuelve un set de datetime.date con los días
+    en que BYMA no negocia. Si el archivo no existe o no parsea, devuelve set
+    vacío y loguea (degradación elegante: el collector sigue corriendo, solo que
+    sin saltear feriados — peor sería que no arranque). Mantener el archivo al día
+    contra el calendario bursátil oficial de BYMA.
+    """
+    try:
+        with open(_RUTA_FERIADOS, encoding="utf-8") as f:
+            data = json.load(f)
+        fechas = {date.fromisoformat(s) for s in data.get("feriados", [])}
+        log.info(f"Feriados BYMA cargados: {len(fechas)} días sin negociación.")
+        return fechas
+    except FileNotFoundError:
+        log.warning(
+            f"No se encontró {_RUTA_FERIADOS}. El collector correrá SIN saltear "
+            f"feriados. Crear el archivo. Continuando con set vacío."
+        )
+        return set()
+    except (json.JSONDecodeError, ValueError) as e:
+        log.error(
+            f"Error parseando {_RUTA_FERIADOS}: {e}. Continuando con set vacío "
+            f"(sin feriados).",
+            exc_info=True,
+        )
+        return set()
+
 
 class ColectorMarketData:
     """
@@ -135,6 +170,7 @@ class ColectorMarketData:
         max_reconexiones_consecutivas: int = 8,
         backoff_inicial_seg: float = 2.0,
         backoff_max_seg: float = 60.0,
+        feriados: "set | None" = None,
     ):
         self._log = log
         self._corriendo = False
@@ -164,6 +200,9 @@ class ColectorMarketData:
 
         self._hora_apertura = hora_apertura
         self._hora_cierre = hora_cierre
+        # Días sin negociación de BYMA (feriados). Si no se pasan explícitos, se
+        # cargan de config/feriados_byma.json. Es un set de datetime.date.
+        self._feriados = feriados if feriados is not None else _cargar_feriados()
         self._segundos_silencio_watchdog = segundos_silencio_watchdog
         self._max_reconexiones = max_reconexiones_consecutivas
         self._backoff_inicial_seg = backoff_inicial_seg
@@ -250,14 +289,15 @@ class ColectorMarketData:
 
     def _mercado_abierto(self) -> bool:
         """
-        True si estamos en horario de rueda: día hábil (lun-vie) y hora dentro de
-        [apertura, cierre). NO contempla feriados de BYMA (limitación conocida: en
-        feriado el collector esperará/conectará sin datos, lo cual es inocuo —el
-        watchdog no se arma sin primer mensaje—; una lista de feriados en config
-        es mejora futura).
+        True si estamos en horario de rueda: día hábil (lun-vie), NO feriado de
+        BYMA, y hora dentro de [apertura, cierre). Los feriados se leen de
+        config/feriados_byma.json (ver _cargar_feriados); mantener ese archivo al
+        día contra el calendario bursátil oficial de BYMA.
         """
         ahora = self._ahora_ba()
         if ahora.weekday() >= 5:  # 5 = sábado, 6 = domingo
+            return False
+        if ahora.date() in self._feriados:
             return False
         return self._hora_apertura <= ahora.time() < self._hora_cierre
 
@@ -274,8 +314,12 @@ class ColectorMarketData:
             second=0,
             microsecond=0,
         )
-        # Avanzar de a un día hasta caer en un futuro hábil.
-        while candidato <= ahora or candidato.weekday() >= 5:
+        # Avanzar de a un día hasta caer en un futuro hábil y NO feriado.
+        while (
+            candidato <= ahora
+            or candidato.weekday() >= 5
+            or candidato.date() in self._feriados
+        ):
             candidato = candidato + timedelta(days=1)
         return (candidato - ahora).total_seconds()
 

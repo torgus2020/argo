@@ -1,0 +1,29 @@
+{
+  "meta": {
+    "descripcion": "Días en que BYMA no negocia (feriados nacionales). El collector no abre conexión estos días.",
+    "fuente": "Feriados nacionales 2026 (Ley 27.399 + Decreto 614/2025). Verificar SIEMPRE contra el calendario bursátil oficial: https://www.byma.com.ar/mercado/calendario-bursatil",
+    "ultima_actualizacion": "2026-06-14",
+    "criterio": "Conservador: solo se listan días con cierre seguro (feriados nacionales). Ante duda, NO marcar el día (mejor conectar al pedo que perder una rueda de datos).",
+    "pendiente_confirmar": [
+      "Soberanía Nacional: 20/11 (viernes) con posible traslado al 23/11 (lunes). NO incluido aún: confirmar contra BYMA antes de noviembre y agregar el día efectivo.",
+      "Días no laborables turísticos (puentes) 23/03, 10/07, 07/12: NO incluidos. Confirmar si BYMA cierra; si cierra, agregarlos."
+    ]
+  },
+  "feriados": [
+    "2026-01-01",
+    "2026-02-16",
+    "2026-02-17",
+    "2026-03-24",
+    "2026-04-02",
+    "2026-04-03",
+    "2026-05-01",
+    "2026-05-25",
+    "2026-06-15",
+    "2026-06-20",
+    "2026-07-09",
+    "2026-08-17",
+    "2026-10-12",
+    "2026-12-08",
+    "2026-12-25"
+  ]
+}
