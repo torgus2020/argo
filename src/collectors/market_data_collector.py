@@ -83,6 +83,7 @@ from src.collectors.parser_market_data import parsear_tick, ErrorParseoTick
 from src.utils.db import get_session
 from src.utils.logger import obtener_logger_collector
 from src.utils.models import InstrumentoBrokerMapping
+from src.utils.telegram_notifier import enviar_alerta
 
 
 log = obtener_logger_collector("market_data")
@@ -542,18 +543,27 @@ class ColectorMarketData:
 
     def _alertar(self, nivel: str, mensaje: str) -> None:
         """
-        Punto único de alerta. Por ahora solo loguea con el nivel adecuado; el
-        ruteo a Telegram (telegram_notifier) se cablea en el sub-paso siguiente,
-        una vez confirmada la firma del notificador. NO inventamos su API acá:
-        todos los call-sites ya están puestos, cablear Telegram = implementar este
-        método una sola vez.
+        Punto único de alerta. Rutea a Telegram vía telegram_notifier.enviar_alerta,
+        que ya loguea localmente y maneja sus propios errores (timeout 5s, red,
+        credenciales) sin levantar excepción. Por eso acá NO logueamos de nuevo
+        (evita duplicado) ni envolvemos en try (el notificador es defensivo).
+
+        El envío va en un hilo aparte (fire-and-forget): _alertar se llama desde
+        el camino de reconexión y desde el handler de excepción de pyRofex; no
+        queremos que un Telegram lento (hasta 5s de timeout) frene la reconexión.
+        El hilo es daemon: no traba el cierre del proceso.
+
+        Mapeo de niveles: el notificador espera INFO/WARNING/ERROR/CRITICAL. El
+        collector usa "WARN" en algunos call-sites -> se normaliza a "WARNING"
+        (si no, el notificador lo degradaría silenciosamente a INFO).
         """
-        if nivel == "CRITICAL":
-            self._log.critical(f"[ALERTA CRÍTICA] {mensaje}")
-        elif nivel == "WARN":
-            self._log.warning(f"[ALERTA] {mensaje}")
-        else:
-            self._log.info(f"[ALERTA] {mensaje}")
+        nivel_telegram = "WARNING" if nivel.upper() == "WARN" else nivel.upper()
+        threading.Thread(
+            target=enviar_alerta,
+            args=(mensaje, nivel_telegram),
+            name="alerta-telegram",
+            daemon=True,
+        ).start()
 
     # --- Supervisor (corre en el hilo principal; era el time.sleep(1) ocioso) ---
 
