@@ -1,0 +1,33 @@
+[Unit]
+Description=Argo - Collector de market data (captura ticks_crudos en rueda BYMA)
+Documentation=https://github.com/torgus2020/argo
+After=network-online.target
+Wants=network-online.target
+# Freno anti crash-loop: si el proceso arranca y muere 5 veces en 300s
+# (ej. bug al iniciar, secrets faltante), systemd lo marca failed y deja de
+# reintentar hasta intervencion manual. Protege contra reinicio infinito rapido.
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+[Service]
+Type=simple
+User=argo
+Group=argo
+WorkingDirectory=/home/argo/argo
+ExecStart=/home/argo/argo/.venv/bin/python /home/argo/argo/scripts/correr_collector_market_data.py --completo
+# El collector maneja UNA rueda por proceso: al cierre (17:00) termina limpio.
+# Restart=always relanza el proceso, que ve el mercado cerrado y espera la
+# proxima apertura (salteando feriados/finde). Es lo que mantiene un proceso
+# vivo esperando la proxima rueda. on-failure no serviria: el cierre sale con
+# codigo 0 y el service quedaria muerto tras la primera rueda.
+Restart=always
+RestartSec=10
+# El cierre ordenado (SIGTERM -> flush + join del escritor) puede tardar hasta
+# ~30s (el join del hilo escritor tiene timeout de 30s). Damos 45s antes de que
+# systemd mande SIGKILL, para no cortar el flush final a la mitad.
+TimeoutStopSec=45
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
