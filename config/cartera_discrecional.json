@@ -1,0 +1,98 @@
+{
+  "meta": {
+    "version": "1.1.0",
+    "fecha_creacion": "2026-06-15",
+    "fecha_actualizacion": "2026-06-15",
+    "fuente": "docs/IPS_cartera_discrecional_v1.md",
+    "descripcion": "Parametros ejecutables de la politica de inversion de la cartera discrecional. Contiene OBJETIVOS y REGLAS, no estado: el estado por factor sale de las posiciones reales (capa de portfolio, H2.0). Alimenta el monitoreo read-only de Argo (comparacion estado-vs-objetivo, alertas de banda y de atraso del glide path). NUNCA ejecucion: la cartera discrecional la decide y opera el titular; Argo observa, compara y reporta.",
+    "ciclo_revision": "trimestral, y ante cualquier cambio material de regimen"
+  },
+
+  "perfil": {
+    "nombre": "crecer con piso",
+    "id_perfil": 2,
+    "horizonte": "largo plazo",
+    "fecha_riesgo": "2027-10",
+    "fecha_riesgo_descripcion": "eleccion legislativa de octubre 2027",
+    "moneda_razonamiento": "USD",
+    "objetivo_retorno": "crecer con sesgo de crecimiento dentro del techo de riesgo; no se fija numero de retorno duro a proposito (anclar una meta presiona a forzar riesgo). Real, no nominal."
+  },
+
+  "riesgo": {
+    "drawdown_maximo_pct": -20,
+    "drawdown_vinculante": true,
+    "drawdown_nota": "Restriccion que manda sobre todo lo demas. Se sostiene con asignacion + gestion activa (bandas + gatillos), no con la asignacion sola.",
+    "concentracion_factor_ar_max_pct": 55,
+    "apalancamiento_max_pct": 0,
+    "apalancamiento_cero_desde": "2027-01",
+    "apalancamiento_nota": "La caucion es apalancamiento (amplifica drawdown; el aforo se ensancha en el stress). Solo herramienta tactica/transitoria, nunca posicion estructural."
+  },
+
+  "asignacion_regimen_objetivo": {
+    "descripcion": "Ancla estrategica post-aterrizaje (marzo 2027). Asignacion por factor de riesgo economico, no por moneda de liquidacion. Rebalanceo por bandas: cuando un factor se sale por suba, se recorta hasta volver a banda (toma de ganancia automatica: vende caro lo que volo, sin adivinar el techo).",
+    "factores": {
+      "bonos_ar":     { "objetivo_pct": 30, "banda_pct": 5, "nota": "carry (~12% USD) + pata de compresion; deja de ser la mitad de la cartera" },
+      "acciones_ar":  { "objetivo_pct": 25, "banda_pct": 5, "nota": "Vaca Muerta/recuperacion; diversificar mas alla de energia/bancos" },
+      "global_ex_ar": { "objetivo_pct": 18, "banda_pct": 4, "nota": "ampliar mas alla de Mag7 (indice amplio/calidad)" },
+      "ballast":      { "objetivo_pct": 27, "banda_pct": 5, "nota": "el piso que hoy falta: lo que NO cae cuando cae Argentina (USD corto / Treasuries / algo de oro)" }
+    },
+    "exposicion_ar_total_objetivo_pct": 55
+  },
+
+  "dial_ar": {
+    "descripcion": "Perilla del titular dentro del perfil 2: convccion vs tranquilidad. El ~55% es el ancla constructiva (mayor conviccion). El extremo defensivo sostiene el -20% de forma mas pasiva, a costa de upside.",
+    "constructivo": { "ar_pct": 55, "ballast_pct": 27 },
+    "defensivo":    { "ar_pct": 40, "ballast_pct": 38 },
+    "posicion_titular": "constructivo"
+  },
+
+  "glide_path": {
+    "descripcion": "Escalera MENSUAL de ~90% AR a ~55% AR (jul 2026 -> mar 2027), ANTES de que el mercado empiece a pricear la eleccion. Es BACKSTOP ('no mas tarde que'): si un gatillo de fuerza permite adelantar, mejor. Aterrizaje en marzo 2027. Principio: vender en las subas, no esperar el techo. Refina a paso mensual el backstop trimestral del IPS §6.",
+    "convencion_aritmetica": "ar_pct = bonos_ar + acciones_ar (los dos factores argentinos). global_ex_ar y ballast son el residual; solo el aterrizaje fija la composicion completa: AR 55 + global 18 + ballast 27 = 100, caucion 0.",
+    "caucion": "plena (~-6%) hasta sep 2026; a la mitad (~-3%) de oct a dic 2026; cero desde ene 2027",
+    "hitos": [
+      { "periodo": "jul_2026", "fecha": "2026-07-31", "ar_pct": 90, "caucion_pct": -6, "tipo": "baseline",   "accion": "confirmar baseline: medir composicion real (~90% AR), sin recorte" },
+      { "periodo": "ago_2026", "fecha": "2026-08-31", "ar_pct": 85, "caucion_pct": -6, "tipo": "recorte",    "accion": "recortar AR a 85%" },
+      { "periodo": "sep_2026", "fecha": "2026-09-30", "ar_pct": 80, "caucion_pct": -6, "tipo": "recorte",    "accion": "recortar AR a 80%" },
+      { "periodo": "oct_2026", "fecha": "2026-10-31", "ar_pct": 75, "caucion_pct": -3, "tipo": "recorte",    "accion": "recortar AR a 75% y reducir caucion a la mitad" },
+      { "periodo": "nov_2026", "fecha": "2026-11-30", "ar_pct": 70, "caucion_pct": -3, "tipo": "recorte",    "accion": "recortar AR a 70%" },
+      { "periodo": "dic_2026", "fecha": "2026-12-31", "ar_pct": 68, "caucion_pct": -3, "tipo": "recorte",    "accion": "recortar AR a 68%" },
+      { "periodo": "ene_2027", "fecha": "2027-01-31", "ar_pct": 65, "caucion_pct": 0,  "tipo": "recorte",    "accion": "recortar AR a 65% y cerrar caucion 100% (no entrar al ano electoral con deuda USD)" },
+      { "periodo": "feb_2027", "fecha": "2027-02-28", "ar_pct": 60, "caucion_pct": 0,  "tipo": "recorte",    "accion": "recortar AR a 60%" },
+      { "periodo": "mar_2027", "fecha": "2027-03-31", "ar_pct": 55, "caucion_pct": 0,  "tipo": "aterrizaje", "accion": "aterrizaje: AR 55%, ballast ~27%, global ~18%, apalancamiento 0" }
+    ]
+  },
+
+  "gatillos": {
+    "descripcion": "Reglas pre-comprometidas. Son señales para el titular (monitoreo y alerta del dashboard), NO ejecucion automatica.",
+    "confirmacion_recortar": {
+      "trigger": "cada notch de upgrade soberano (B- -> B -> B+ -> BB- ...)",
+      "accion": "soltar una tanda de AR",
+      "logica": "contraintuitivo pero correcto: el upgrade confirma la tesis Y significa que el precio ya se movio Y que el upside restante es mas fino. Se vende EN la buena noticia."
+    },
+    "freno_de_riskear": {
+      "trigger": "reservas BCRA se estancan, o la desinflacion se da vuelta, o el riesgo electoral se materializa",
+      "accion": "recortar el tilt del satelite (de-riskear)"
+    },
+    "eleccion_stress_test": {
+      "fecha": "2027-10",
+      "descripcion": "no es apuesta binaria: la cartera debe poder atravesarla dentro del techo de -20%.",
+      "opcion_tactica": "dipear por debajo de 55% (hacia ~45%) en el pico de incertidumbre y re-riesgo despues de que resuelva, si resuelve a favor"
+    }
+  },
+
+  "signposts": {
+    "descripcion": "Tablero de señales a trackear (insumo del dashboard de Argo). El tilt constructivo AR vive en el satelite y se sostiene como tesis CONDICIONAL y falsable.",
+    "escalera_ratings": {
+      "baseline_jun2026": "B-",
+      "objetivo": "Investment Grade (+6 notches)",
+      "fuente": "S&P / Fitch",
+      "nota": "cada notch es un checkpoint del gatillo de confirmacion"
+    },
+    "macro": ["reservas_bcra", "desinflacion", "riesgo_pais", "resultado_fiscal"],
+    "poblacion": {
+      "descripcion": "catalizador del titular: que la mejora macro llegue a la poblacion antes de la eleccion, observable via:",
+      "indicadores": ["salario_real", "empleo", "posicionamiento_en_encuestas"]
+    }
+  }
+}

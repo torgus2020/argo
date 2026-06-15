@@ -1,7 +1,7 @@
 {
   "meta": {
     "schema_version": "1.0.0",
-    "fecha_ultima_actualizacion": "2026-05-31",
+    "fecha_ultima_actualizacion": "2026-06-15",
     "autor": "Gus + Claude"
   },
   "fases": [
@@ -348,29 +348,276 @@
       "hitos": [
         {
           "id": "H2.0",
-          "nombre": "Portfolio Management Layer",
-          "descripcion": "Diseñar e implementar capa de gestión de portfolio: tablas para posiciones, operaciones, eventos de renta fija (cupones, amortizaciones), dividendos cobrados, transferencias entre cuentas, valuación diaria, evolución de PnL. Separada de market data (H1.x) por tener distinta fuente de verdad, frecuencia de actualización y requisitos de auditoría.",
-          "estado": "pendiente",
+          "nombre": "Portfolio Management Layer (3 cuentas + vista por factor)",
+          "descripcion": "Disenar e implementar la capa de gestion de portfolio sobre las 3 cuentas comitentes (2 discrecionales + piloto Argo): tabla cuentas (4 ejes: login / comitente / titular / mandato), clasificacion economica curada (instrumento -> subyacente -> factor), posiciones, operaciones, eventos de renta fija, dividendos, transferencias, valuacion diaria. Vista consolidada read-only por factor con tracking separado por comitente. Argo observa las 3 y ejecuta solo sobre la piloto. Separada de market data (H1.x) por fuente de verdad, frecuencia y auditoria distintas.",
+          "estado": "en_curso",
           "prioridad": "alta",
-          "fecha_inicio": null,
+          "fecha_inicio": "2026-06-15",
           "fecha_cierre_target": null,
           "fecha_cierre_real": null,
           "depende_de": [
-            "H1.1"
+            "H1.1",
+            "H2.1"
           ],
           "entregables": [
-            "Diseño de schema de portfolio (entidad-relación documentado)",
-            "Tablas: posiciones, operaciones, eventos_renta_fija, dividendos, transferencias, valuacion_diaria",
-            "Migración Alembic con la nueva capa",
-            "Script de carga inicial de posiciones desde broker (o manual)",
+            "docs/portfolio_layer_design.md — diseño en papel (entregable 1, COMPLETO)",
+            "Sondeo a BIND (get_account_report) contra las 3 cuentas para validar el diseño contra datos reales",
+            "Tablas firmes: cuentas + clasificacion_economica (migracion Alembic)",
+            "Tablas dependientes de BIND: posiciones, operaciones, eventos_renta_fija, dividendos, transferencias, valuacion_diaria",
+            "Script de carga inicial de posiciones",
             "Tests unitarios"
           ],
           "criterios_cuantitativos": [
-            "Schema documentado y revisado antes de tocar código",
+            "Schema documentado y revisado antes de tocar codigo (COMPLETO: docs/portfolio_layer_design.md)",
             "Tests unitarios pasando local + VPS",
-            "Reconciliación cero diferencias contra extracto del broker durante 7 días"
+            "Reconciliacion cero diferencias contra extracto del broker, por cuenta, durante 7 dias"
           ],
-          "notas": "Hito identificado durante diseño de H1.1 el 2026-05-19. Decisión deliberada de NO incluirlo en H1.1 porque vamos a aprender qué estructura de datos dan los brokers (Cocos, BIND, IOL) cuando configuremos los respectivos collectors. Diseñar a ciegas ahora generaría rediseños después. Nota del operador: 'diseñar Portfolio Management Layer después de tener experiencia con datos reales de brokers'."
+          "riesgos": [
+            "Diseñar las tablas de posiciones/operaciones sin ver el get_account_report real repetiria el error que la nota original de este hito advierte; por eso el diseño en papel separa lo firme (cuentas, clasificacion) de lo que espera el sondeo a BIND.",
+            "GOBERNANZA (login compartido): la piloto (ejecutable) comparte credenciales con una discrecional (read-only). El login que Argo usa para operar la piloto tambien abre la discrecional. La frontera de ejecucion (IPS §8) NO la garantizan las credenciales sino una validacion pre-orden a construir en Fase 3/4: chequear mandato=ejecutable + allowlist de comitentes antes de toda orden. La columna mandato/ejecutable de la tabla cuentas es la semilla de ese control."
+          ],
+          "notas": "Re-scopeado el 2026-06-15 al fusionar la linea discrecional. De 'capa generica de portfolio' paso a abarcar las 3 cuentas + vista por factor + frontera de ejecucion. Decisiones cerradas: P&L en USD (conversion solo en la capa de presentacion), clasificacion por instrumento (el subyacente economico agrupa para no contar doble). Entregable 1 (diseño en papel) COMPLETO. Proximo paso natural: sondeo get_account_report a BIND (no necesita rueda abierta) para validar el diseño antes de bajar a DDL. Detalle en docs/portfolio_layer_design.md."
+        },
+        {
+          "id": "H2.1",
+          "nombre": "IPS cartera discrecional redactado e integrado",
+          "descripcion": "Investment Policy Statement de la cartera discrecional (perfil 'crecer con piso', drawdown -20% vinculante, asignacion por factor de riesgo economico, glide path). Integrado a Argo: documento de politica + diseño en papel de la capa de portfolio + config ejecutable.",
+          "estado": "cerrado",
+          "prioridad": "alta",
+          "fecha_inicio": "2026-06-11",
+          "fecha_cierre_target": null,
+          "fecha_cierre_real": "2026-06-15",
+          "depende_de": [],
+          "entregables": [
+            "docs/IPS_cartera_discrecional_v1.md",
+            "docs/portfolio_layer_design.md",
+            "config/cartera_discrecional.json"
+          ],
+          "criterios_cuantitativos": [
+            "IPS redactado y revisado por el titular",
+            "Parametros ejecutables extraidos a config que parsea sin errores",
+            "Diseño de la capa de portfolio documentado (entregable 1 de H2.0)"
+          ],
+          "riesgos": [],
+          "notas": "Cerrado el 2026-06-15. No aplica validacion operativa (es documento + config + diseño, no proceso corriendo encima) — mismo criterio con que se cerro H1.1. La capa de datos que materializa el IPS se construye en H2.0 (re-scopeado)."
+        },
+        {
+          "id": "H2.2",
+          "nombre": "Glide path discrecional jul 2026: AR <= 90%",
+          "descripcion": "Hito de EJECUCION DISCRECIONAL (no desarrollo de codigo): confirmar baseline: medir composicion real (~90% AR), sin recorte. Argo lo trackea y alerta via el roadmap engine; el titular ejecuta sobre la cartera discrecional. Es backstop ('no mas tarde que'): si un gatillo de fuerza permite adelantar el recorte, mejor.",
+          "estado": "pendiente",
+          "prioridad": "media",
+          "fecha_inicio": null,
+          "fecha_cierre_target": "2026-07-31",
+          "fecha_cierre_real": null,
+          "depende_de": [
+            "H2.1"
+          ],
+          "entregables": [
+            "Exposicion AR llevada a <= 90% (ejecucion del titular)",
+            "Verificacion via vista consolidada por factor (Argo, read-only)"
+          ],
+          "criterios_cuantitativos": [
+            "Composicion real medida y baseline confirmado (~90% AR) al 2026-07-31"
+          ],
+          "riesgos": [
+            "La ejecucion depende de condiciones de mercado; el glide path es backstop, no obligacion de vender a cualquier precio."
+          ],
+          "notas": "Parte de la escalera mensual del glide path (config/cartera_discrecional.json, bloque glide_path). Accion del mes: confirmar baseline: medir composicion real (~90% AR), sin recorte."
+        },
+        {
+          "id": "H2.3",
+          "nombre": "Glide path discrecional ago 2026: AR <= 85%",
+          "descripcion": "Hito de EJECUCION DISCRECIONAL (no desarrollo de codigo): recortar AR a 85%. Argo lo trackea y alerta via el roadmap engine; el titular ejecuta sobre la cartera discrecional. Es backstop ('no mas tarde que'): si un gatillo de fuerza permite adelantar el recorte, mejor.",
+          "estado": "pendiente",
+          "prioridad": "media",
+          "fecha_inicio": null,
+          "fecha_cierre_target": "2026-08-31",
+          "fecha_cierre_real": null,
+          "depende_de": [
+            "H2.1"
+          ],
+          "entregables": [
+            "Exposicion AR llevada a <= 85% (ejecucion del titular)",
+            "Verificacion via vista consolidada por factor (Argo, read-only)"
+          ],
+          "criterios_cuantitativos": [
+            "Exposicion a factor AR (bonos_ar + acciones_ar) <= 85% al 2026-08-31"
+          ],
+          "riesgos": [
+            "La ejecucion depende de condiciones de mercado; el glide path es backstop, no obligacion de vender a cualquier precio."
+          ],
+          "notas": "Parte de la escalera mensual del glide path (config/cartera_discrecional.json, bloque glide_path). Accion del mes: recortar AR a 85%."
+        },
+        {
+          "id": "H2.4",
+          "nombre": "Glide path discrecional sep 2026: AR <= 80%",
+          "descripcion": "Hito de EJECUCION DISCRECIONAL (no desarrollo de codigo): recortar AR a 80%. Argo lo trackea y alerta via el roadmap engine; el titular ejecuta sobre la cartera discrecional. Es backstop ('no mas tarde que'): si un gatillo de fuerza permite adelantar el recorte, mejor.",
+          "estado": "pendiente",
+          "prioridad": "media",
+          "fecha_inicio": null,
+          "fecha_cierre_target": "2026-09-30",
+          "fecha_cierre_real": null,
+          "depende_de": [
+            "H2.1"
+          ],
+          "entregables": [
+            "Exposicion AR llevada a <= 80% (ejecucion del titular)",
+            "Verificacion via vista consolidada por factor (Argo, read-only)"
+          ],
+          "criterios_cuantitativos": [
+            "Exposicion a factor AR (bonos_ar + acciones_ar) <= 80% al 2026-09-30"
+          ],
+          "riesgos": [
+            "La ejecucion depende de condiciones de mercado; el glide path es backstop, no obligacion de vender a cualquier precio."
+          ],
+          "notas": "Parte de la escalera mensual del glide path (config/cartera_discrecional.json, bloque glide_path). Accion del mes: recortar AR a 80%."
+        },
+        {
+          "id": "H2.5",
+          "nombre": "Glide path discrecional oct 2026: AR <= 75%",
+          "descripcion": "Hito de EJECUCION DISCRECIONAL (no desarrollo de codigo): recortar AR a 75% y reducir caucion a la mitad. Argo lo trackea y alerta via el roadmap engine; el titular ejecuta sobre la cartera discrecional. Es backstop ('no mas tarde que'): si un gatillo de fuerza permite adelantar el recorte, mejor.",
+          "estado": "pendiente",
+          "prioridad": "media",
+          "fecha_inicio": null,
+          "fecha_cierre_target": "2026-10-31",
+          "fecha_cierre_real": null,
+          "depende_de": [
+            "H2.1"
+          ],
+          "entregables": [
+            "Exposicion AR llevada a <= 75% (ejecucion del titular)",
+            "Verificacion via vista consolidada por factor (Argo, read-only)"
+          ],
+          "criterios_cuantitativos": [
+            "Exposicion a factor AR (bonos_ar + acciones_ar) <= 75% al 2026-10-31",
+            "Caucion reducida a la mitad (~-3%)"
+          ],
+          "riesgos": [
+            "La ejecucion depende de condiciones de mercado; el glide path es backstop, no obligacion de vender a cualquier precio."
+          ],
+          "notas": "Parte de la escalera mensual del glide path (config/cartera_discrecional.json, bloque glide_path). Accion del mes: recortar AR a 75% y reducir caucion a la mitad."
+        },
+        {
+          "id": "H2.6",
+          "nombre": "Glide path discrecional nov 2026: AR <= 70%",
+          "descripcion": "Hito de EJECUCION DISCRECIONAL (no desarrollo de codigo): recortar AR a 70%. Argo lo trackea y alerta via el roadmap engine; el titular ejecuta sobre la cartera discrecional. Es backstop ('no mas tarde que'): si un gatillo de fuerza permite adelantar el recorte, mejor.",
+          "estado": "pendiente",
+          "prioridad": "media",
+          "fecha_inicio": null,
+          "fecha_cierre_target": "2026-11-30",
+          "fecha_cierre_real": null,
+          "depende_de": [
+            "H2.1"
+          ],
+          "entregables": [
+            "Exposicion AR llevada a <= 70% (ejecucion del titular)",
+            "Verificacion via vista consolidada por factor (Argo, read-only)"
+          ],
+          "criterios_cuantitativos": [
+            "Exposicion a factor AR (bonos_ar + acciones_ar) <= 70% al 2026-11-30"
+          ],
+          "riesgos": [
+            "La ejecucion depende de condiciones de mercado; el glide path es backstop, no obligacion de vender a cualquier precio."
+          ],
+          "notas": "Parte de la escalera mensual del glide path (config/cartera_discrecional.json, bloque glide_path). Accion del mes: recortar AR a 70%."
+        },
+        {
+          "id": "H2.7",
+          "nombre": "Glide path discrecional dic 2026: AR <= 68%",
+          "descripcion": "Hito de EJECUCION DISCRECIONAL (no desarrollo de codigo): recortar AR a 68%. Argo lo trackea y alerta via el roadmap engine; el titular ejecuta sobre la cartera discrecional. Es backstop ('no mas tarde que'): si un gatillo de fuerza permite adelantar el recorte, mejor.",
+          "estado": "pendiente",
+          "prioridad": "media",
+          "fecha_inicio": null,
+          "fecha_cierre_target": "2026-12-31",
+          "fecha_cierre_real": null,
+          "depende_de": [
+            "H2.1"
+          ],
+          "entregables": [
+            "Exposicion AR llevada a <= 68% (ejecucion del titular)",
+            "Verificacion via vista consolidada por factor (Argo, read-only)"
+          ],
+          "criterios_cuantitativos": [
+            "Exposicion a factor AR (bonos_ar + acciones_ar) <= 68% al 2026-12-31"
+          ],
+          "riesgos": [
+            "La ejecucion depende de condiciones de mercado; el glide path es backstop, no obligacion de vender a cualquier precio."
+          ],
+          "notas": "Parte de la escalera mensual del glide path (config/cartera_discrecional.json, bloque glide_path). Accion del mes: recortar AR a 68%."
+        },
+        {
+          "id": "H2.8",
+          "nombre": "Glide path discrecional ene 2027: AR <= 65%",
+          "descripcion": "Hito de EJECUCION DISCRECIONAL (no desarrollo de codigo): recortar AR a 65% y cerrar caucion 100% (no entrar al ano electoral con deuda USD). Argo lo trackea y alerta via el roadmap engine; el titular ejecuta sobre la cartera discrecional. Es backstop ('no mas tarde que'): si un gatillo de fuerza permite adelantar el recorte, mejor.",
+          "estado": "pendiente",
+          "prioridad": "media",
+          "fecha_inicio": null,
+          "fecha_cierre_target": "2027-01-31",
+          "fecha_cierre_real": null,
+          "depende_de": [
+            "H2.1"
+          ],
+          "entregables": [
+            "Exposicion AR llevada a <= 65% (ejecucion del titular)",
+            "Verificacion via vista consolidada por factor (Argo, read-only)"
+          ],
+          "criterios_cuantitativos": [
+            "Exposicion a factor AR (bonos_ar + acciones_ar) <= 65% al 2027-01-31",
+            "Caucion cerrada al 100% (apalancamiento 0)"
+          ],
+          "riesgos": [
+            "La ejecucion depende de condiciones de mercado; el glide path es backstop, no obligacion de vender a cualquier precio."
+          ],
+          "notas": "Parte de la escalera mensual del glide path (config/cartera_discrecional.json, bloque glide_path). Accion del mes: recortar AR a 65% y cerrar caucion 100% (no entrar al ano electoral con deuda USD)."
+        },
+        {
+          "id": "H2.9",
+          "nombre": "Glide path discrecional feb 2027: AR <= 60%",
+          "descripcion": "Hito de EJECUCION DISCRECIONAL (no desarrollo de codigo): recortar AR a 60%. Argo lo trackea y alerta via el roadmap engine; el titular ejecuta sobre la cartera discrecional. Es backstop ('no mas tarde que'): si un gatillo de fuerza permite adelantar el recorte, mejor.",
+          "estado": "pendiente",
+          "prioridad": "media",
+          "fecha_inicio": null,
+          "fecha_cierre_target": "2027-02-28",
+          "fecha_cierre_real": null,
+          "depende_de": [
+            "H2.1"
+          ],
+          "entregables": [
+            "Exposicion AR llevada a <= 60% (ejecucion del titular)",
+            "Verificacion via vista consolidada por factor (Argo, read-only)"
+          ],
+          "criterios_cuantitativos": [
+            "Exposicion a factor AR (bonos_ar + acciones_ar) <= 60% al 2027-02-28"
+          ],
+          "riesgos": [
+            "La ejecucion depende de condiciones de mercado; el glide path es backstop, no obligacion de vender a cualquier precio."
+          ],
+          "notas": "Parte de la escalera mensual del glide path (config/cartera_discrecional.json, bloque glide_path). Accion del mes: recortar AR a 60%."
+        },
+        {
+          "id": "H2.10",
+          "nombre": "Glide path discrecional mar 2027: AR <= 55%",
+          "descripcion": "Hito de EJECUCION DISCRECIONAL (no desarrollo de codigo): aterrizaje: AR 55%, ballast ~27%, global ~18%, apalancamiento 0. Argo lo trackea y alerta via el roadmap engine; el titular ejecuta sobre la cartera discrecional. Es backstop ('no mas tarde que'): si un gatillo de fuerza permite adelantar el recorte, mejor.",
+          "estado": "pendiente",
+          "prioridad": "media",
+          "fecha_inicio": null,
+          "fecha_cierre_target": "2027-03-31",
+          "fecha_cierre_real": null,
+          "depende_de": [
+            "H2.1"
+          ],
+          "entregables": [
+            "Exposicion AR llevada a <= 55% (ejecucion del titular)",
+            "Verificacion via vista consolidada por factor (Argo, read-only)"
+          ],
+          "criterios_cuantitativos": [
+            "Exposicion a factor AR (bonos_ar + acciones_ar) <= 55% al 2027-03-31"
+          ],
+          "riesgos": [
+            "La ejecucion depende de condiciones de mercado; el glide path es backstop, no obligacion de vender a cualquier precio."
+          ],
+          "notas": "Parte de la escalera mensual del glide path (config/cartera_discrecional.json, bloque glide_path). Accion del mes: aterrizaje: AR 55%, ballast ~27%, global ~18%, apalancamiento 0."
         }
       ]
     },
