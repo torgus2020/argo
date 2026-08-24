@@ -172,6 +172,18 @@ class ColectorMarketData:
         backoff_inicial_seg: float = 2.0,
         backoff_max_seg: float = 60.0,
         feriados: "set | None" = None,
+        # --- v3: suscripción por lotes ---
+        # Primary valida el mensaje de suscripción como UNA unidad: si un símbolo
+        # no existe, rechaza el mensaje ENTERO. Con los 366 en un solo mensaje, un
+        # instrumento deslistado tumba la rueda completa (incidente 2026-06-24 ->
+        # 2026-08-21, 58 días sin captura). En lotes, un símbolo malo mata su lote
+        # y no el día. Fail-soft, no fail-all.
+        tam_lote_suscripcion: int = 20,
+        espera_por_lote_seg: float = 0.4,
+        # --- v3: alerta de ausencia total de datos ---
+        # Segundos de rueda abierta sin UN SOLO tick antes de gritar por Telegram.
+        segundos_alerta_sin_datos: float = 300.0,
+        intervalo_realerta_sin_datos_seg: float = 1800.0,
     ):
         self._log = log
         self._corriendo = False
@@ -208,6 +220,28 @@ class ColectorMarketData:
         self._max_reconexiones = max_reconexiones_consecutivas
         self._backoff_inicial_seg = backoff_inicial_seg
         self._backoff_max_seg = backoff_max_seg
+
+        # --- v3: suscripción por lotes ---
+        self._tam_lote_suscripcion = max(1, int(tam_lote_suscripcion))
+        self._espera_por_lote_seg = espera_por_lote_seg
+        # Los ERROR del servidor llegan por el hilo del WebSocket, de forma
+        # asincrónica: no son el valor de retorno de market_data_subscription.
+        # Para saber si un lote fue rechazado se compara el contador antes y
+        # después de enviarlo, con una pausa en el medio. El lock protege el
+        # contador entre el hilo del WS y el que suscribe.
+        self._lock_errores = threading.Lock()
+        self._n_errores_servidor = 0
+        # Símbolos que el servidor rechazó individualmente. Se aíslan reenviando
+        # de a uno los símbolos del lote que falló.
+        self._simbolos_rechazados: set[str] = set()
+
+        # --- v3: alerta de ausencia total de datos ---
+        self._segundos_alerta_sin_datos = segundos_alerta_sin_datos
+        self._intervalo_realerta_sin_datos = intervalo_realerta_sin_datos_seg
+        # Momento en que se envió la primera suscripción de la sesión. Es el
+        # arranque del reloj de "hace N minutos que debería haber datos".
+        self._ts_inicio_captura_mono: "float | None" = None
+        self._ts_ultima_alerta_sin_datos = 0.0
 
         # --- Contadores de la corrida ---
         self._n_mensajes = 0              # mensajes recibidos del WebSocket
@@ -403,8 +437,33 @@ class ColectorMarketData:
         Mensajes de ERROR del servidor (distinto de una caída de conexión). Se
         loguea pero NO dispara reconexión: un ERROR de servidor (ej. suscripción
         mal armada) no es una conexión muerta.
+
+        v3: además incrementa un contador que el suscriptor por lotes consulta
+        para saber si el lote que acaba de enviar fue rechazado.
+
+        Se loguea SOLO la descripción, no el payload completo. Cuando Primary
+        rechaza un batch devuelve los N símbolos enviados dentro del mensaje de
+        error; loguear eso escribía ~50 KB por rechazo y fue lo que volvió
+        ilegibles los logs del incidente. La descripción es la única parte con
+        información.
         """
-        self._log.error(f"Mensaje de ERROR del servidor: {mensaje}")
+        with self._lock_errores:
+            self._n_errores_servidor += 1
+
+        descripcion = None
+        if isinstance(mensaje, dict):
+            descripcion = mensaje.get("description") or mensaje.get("message")
+
+        if descripcion:
+            self._log.error(f"ERROR del servidor: {descripcion}")
+        else:
+            self._log.error(f"ERROR del servidor (sin descripción): "
+                            f"{str(mensaje)[:300]}")
+
+    def _contar_errores(self) -> int:
+        """Lectura protegida del contador de errores del servidor."""
+        with self._lock_errores:
+            return self._n_errores_servidor
 
     def _manejar_excepcion(self, excepcion: Exception) -> None:
         """
@@ -507,14 +566,106 @@ class ColectorMarketData:
             error_handler=self._manejar_error,
             exception_handler=self._manejar_excepcion,
         )
-        pyRofex.market_data_subscription(
-            tickers=self._simbolos_suscriptos,
-            entries=_ENTRIES,
-        )
+        self._suscribir_en_lotes(self._simbolos_suscriptos)
+
+        # Arranca (o reinicia) el reloj de la alerta de ausencia de datos.
+        self._ts_inicio_captura_mono = time.monotonic()
+
+    def _suscribir_en_lotes(self, simbolos: list) -> None:
+        """
+        Suscribe en lotes en vez de un solo mensaje gigante. FAIL-SOFT.
+
+        Por qué (la lección más cara del proyecto): Primary/BIND valida el mensaje
+        de suscripción como una unidad indivisible. Un solo símbolo inexistente
+        hace que rechace el mensaje COMPLETO. Con los 366 símbolos en un mensaje,
+        `MERV - XMEV - CRESC - CI` —una acción que se deslistó— dejó al sistema
+        58 días sin capturar un solo dato, con el service en `active (running)`.
+
+        Con lotes de 20, ese mismo símbolo cuesta 20 símbolos, no 366. Y como el
+        lote rechazado igual se pierde entero, cuando uno falla se reenvían sus
+        símbolos DE A UNO: así se aísla al culpable y se recuperan los 19 sanos.
+        El reenvío individual es caro (una pausa por símbolo), pero solo ocurre
+        sobre el lote que falló, que es raro.
+
+        Cómo se detecta el rechazo: los ERROR del servidor llegan de forma
+        asincrónica por el hilo del WebSocket, no como retorno de la llamada. Por
+        eso se compara el contador de errores antes y después de enviar, con una
+        pausa en el medio para darle tiempo a la respuesta. No es elegante, pero
+        es lo que el protocolo permite.
+        """
+        if not simbolos:
+            self._log.warning("No hay símbolos para suscribir.")
+            return
+
+        self._simbolos_rechazados = set()
+        tam = self._tam_lote_suscripcion
+        lotes = [simbolos[i:i + tam] for i in range(0, len(simbolos), tam)]
+
         self._log.info(
-            f"Suscripción (re)enviada: {len(self._simbolos_suscriptos)} símbolos "
-            f"(entries: BIDS, OFFERS, LAST)."
+            f"Suscribiendo {len(simbolos)} símbolos en {len(lotes)} lotes de "
+            f"hasta {tam} (fail-soft: un símbolo malo mata su lote, no la rueda)."
         )
+
+        aceptados = 0
+        lotes_rechazados = 0
+
+        for n, lote in enumerate(lotes, start=1):
+            errores_antes = self._contar_errores()
+            try:
+                pyRofex.market_data_subscription(tickers=lote, entries=_ENTRIES)
+            except Exception as e:
+                self._log.error(f"Lote {n}/{len(lotes)}: falló el envío: {e}")
+                continue
+
+            time.sleep(self._espera_por_lote_seg)
+
+            if self._contar_errores() == errores_antes:
+                aceptados += len(lote)
+                continue
+
+            # El lote fue rechazado entero. Reenviar de a uno para recuperar
+            # los sanos y quedarnos con el nombre exacto del culpable.
+            lotes_rechazados += 1
+            self._log.warning(
+                f"Lote {n}/{len(lotes)} RECHAZADO. Reenviando sus {len(lote)} "
+                f"símbolos de a uno para aislar al inválido..."
+            )
+            for simbolo in lote:
+                err_antes = self._contar_errores()
+                try:
+                    pyRofex.market_data_subscription(
+                        tickers=[simbolo], entries=_ENTRIES
+                    )
+                except Exception as e:
+                    self._log.error(f"  {simbolo}: falló el envío: {e}")
+                    self._simbolos_rechazados.add(simbolo)
+                    continue
+                time.sleep(self._espera_por_lote_seg)
+                if self._contar_errores() > err_antes:
+                    self._simbolos_rechazados.add(simbolo)
+                    self._log.warning(f"  INVALIDO: {simbolo}")
+                else:
+                    aceptados += 1
+
+        self._log.info(
+            f"Suscripción completa: {aceptados}/{len(simbolos)} símbolos "
+            f"aceptados | {len(self._simbolos_rechazados)} rechazados | "
+            f"{lotes_rechazados} lote(s) con problemas."
+        )
+
+        if self._simbolos_rechazados:
+            lista = ", ".join(sorted(self._simbolos_rechazados))
+            self._log.error(f"Símbolos rechazados por el broker: {lista}")
+            # Esto NO es fatal (seguimos capturando el resto), pero sí amerita
+            # aviso: significa que el universo se desactualizó y hay que correr
+            # scripts/validar_universo_vs_catalogo.py.
+            self._alertar(
+                "WARNING",
+                f"Collector: {len(self._simbolos_rechazados)} símbolo(s) "
+                f"rechazados por el broker y excluidos de la captura "
+                f"({lista}). El resto sigue capturando. "
+                f"Correr validar_universo_vs_catalogo.py.",
+            )
 
     def _silencio_excedido(self) -> bool:
         """
@@ -565,6 +716,69 @@ class ColectorMarketData:
             daemon=True,
         ).start()
 
+    def _vigilar_ausencia_de_datos(self) -> None:
+        """
+        Alerta de SILENCIO TOTAL. Es el agujero por el que se coló el incidente.
+
+        El watchdog de silencio (_silencio_excedido) vigila "dejaron de llegar
+        datos", y está deliberadamente DESARMADO hasta el primer mensaje, para no
+        dar falso positivo en un arranque lento. Perfecto — salvo en el caso en
+        que el primer mensaje no llega nunca. Ahí el watchdog duerme para siempre
+        y nadie se entera. Eso fue exactamente lo que pasó: 58 días de ruedas con
+        cero ticks, el proceso vivo, los logs prolijos, y ninguna alerta.
+
+        La lección general: un monitor que solo reacciona a errores no ve los
+        silencios, y el silencio es el modo de falla más caro. Hace falta una
+        alerta de que NADA PASÓ, no solo de que algo falló.
+
+        Distingue dos fallas que se ven parecidas desde afuera pero se arreglan
+        distinto:
+          - 0 recibidos  -> no llega nada del broker (suscripción, red, permisos).
+          - recibidos > 0 pero 0 persistidos -> llegan datos y NO se graban
+            (escritor muerto, base bloqueada, error de parseo masivo). Es peor,
+            porque desde el log parece que todo funciona.
+
+        Re-alerta cada _intervalo_realerta_sin_datos para no inundar Telegram,
+        pero sin dejar de insistir: una alerta única a las 11:05 se pierde entre
+        notificaciones.
+        """
+        if self._ts_inicio_captura_mono is None:
+            return
+
+        transcurrido = time.monotonic() - self._ts_inicio_captura_mono
+        if transcurrido < self._segundos_alerta_sin_datos:
+            return
+        if self._n_persistidos > 0:
+            return  # está entrando y grabando: nada que alertar
+
+        ahora = time.monotonic()
+        if (ahora - self._ts_ultima_alerta_sin_datos) < self._intervalo_realerta_sin_datos:
+            return
+        self._ts_ultima_alerta_sin_datos = ahora
+
+        minutos = int(transcurrido // 60)
+        if self._n_mensajes == 0:
+            detalle = (
+                f"CERO mensajes recibidos del broker. "
+                f"Suscriptos: {len(self._simbolos_suscriptos)} símbolos"
+            )
+            if self._simbolos_rechazados:
+                detalle += f" ({len(self._simbolos_rechazados)} rechazados)"
+            detalle += ". Revisar suscripción/universo."
+        else:
+            detalle = (
+                f"Llegan datos ({self._n_mensajes} mensajes, "
+                f"{self._n_encolados} encolados) pero CERO persistidos. "
+                f"El escritor no está grabando. "
+                f"Errores de escritura: {self._n_errores_escritura}."
+            )
+
+        self._log.error(f"ALERTA SIN DATOS ({minutos} min): {detalle}")
+        self._alertar(
+            "CRITICAL",
+            f"Rueda abierta hace {minutos} min y 0 ticks persistidos. {detalle}",
+        )
+
     # --- Supervisor (corre en el hilo principal; era el time.sleep(1) ocioso) ---
 
     def _supervisar(self) -> None:
@@ -582,6 +796,11 @@ class ColectorMarketData:
             if not self._mercado_abierto():
                 self._log.info("Rueda cerrada: terminando la sesión de captura.")
                 break
+
+            # 1.bis ¿Rueda abierta y NADA de datos? Alerta de silencio total.
+            # Va antes del chequeo de caída a propósito: en el incidente no había
+            # caída que detectar — la conexión estaba perfecta y vacía.
+            self._vigilar_ausencia_de_datos()
 
             # 2. ¿Caída detectada? (excepción del WS o silencio prolongado)
             caida_excepcion = self._evento_reconectar.is_set()
